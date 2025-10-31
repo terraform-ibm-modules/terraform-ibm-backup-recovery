@@ -1,0 +1,8 @@
+# modules/data_source_connection/outputs.tf
+output "registration_token" {
+  value     = ibm_backup_recovery_connection_registration_token.registration_token.registration_token
+  sensitive = true
+}
+output "connection_id" {
+  value = var.create_new ? ibm_backup_recovery_data_source_connection.connection[0].connection_id : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id
+}
