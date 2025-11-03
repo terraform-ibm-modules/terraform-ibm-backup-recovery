@@ -1,31 +1,48 @@
 ########################################################################################################################
-# Resource group
+# Resource Group
 ########################################################################################################################
 
 module "resource_group" {
-  source  = "terraform-ibm-modules/resource-group/ibm"
+  source = "terraform-ibm-modules/resource-group/ibm"
   version = "1.2.0"
-  # if an existing resource group is not set (null) create a new one using prefix
-  resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
+
+  # If var.resource_group is null, create a new RG using prefix
+  resource_group_name          = var.resource_group == null ? "${var.prefix}-rg" : null
   existing_resource_group_name = var.resource_group
 }
 
 ########################################################################################################################
-# COS
+# Backup & Recovery Service (BRS) Module
 ########################################################################################################################
-
 #
-# Developer tips:
-#   - Call the local module / modules in the example to show how they can be consumed
-#   - include the actual module source as a code comment like below so consumers know how to consume from correct location
+# This calls your local BRS module (../..)
+# To use from Terraform Registry, uncomment the source/version lines below
 #
-
-module "cos" {
+module "brs" {
   source = "../.."
-  # remove the above line and uncomment the below 2 lines to consume the module from the registry
-  # source            = "terraform-ibm-modules/<replace>/ibm"
-  # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "${var.prefix}-cos"
-  resource_group_id = module.resource_group.resource_group_id
-  resource_tags     = var.resource_tags
+  # source  = "terraform-ibm-modules/backup-recovery/ibm"
+  # version = "1.0.0"  # Replace with actual release version
+
+  # === Required Inputs ===
+  resource_group_id     = module.resource_group.resource_group_id
+  create_new_instance   = true
+  create_new_connection = true
+  instance_name         = var.instance_name
+  connection_name       = var.connection_name
+  region                = var.region
+  provision_code        = var.provision_code
+
+  # === Optional Overrides (defaults from module) ===
+  name                  = "backup-recovery"
+  plan                  = "premium"
+  endpoint_type         = "public"
+
+  timeouts = {
+    create = "90m"
+    update = "30m"
+    delete = "30m"
+  }
+
+  # Ensure resource group exists first
+  depends_on = [module.resource_group]
 }

@@ -1,30 +1,12 @@
-########################################################################################################################
-# Outputs
-########################################################################################################################
-
-#
-# Developer tips:
-#   - Below are some good practise sample outputs
-#   - They should be updated for outputs applicable to the module being added
-#   - Use variable validation when possible
-#
-
-output "account_id" {
-  description = "An alpha-numeric value identifying the account ID."
-  value       = ibm_resource_instance.cos_instance.account_id
+output "registration_token" {
+  value     = ibm_backup_recovery_connection_registration_token.registration_token.token
+  sensitive = true
 }
 
-output "guid" {
-  description = "The GUID of the resource instance."
-  value       = ibm_resource_instance.cos_instance.guid
+output "tenant_id" {
+  value = local.tenant_id
 }
 
-output "id" {
-  description = "The unique identifier of the resource instance."
-  value       = ibm_resource_instance.cos_instance.id
-}
-
-output "crn" {
-  description = "The CRN of the resource instance."
-  value       = ibm_resource_instance.cos_instance.crn
+output "connection_id" {
+  value = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].connection_id : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id
 }

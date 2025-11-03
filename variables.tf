@@ -1,36 +1,109 @@
-########################################################################################################################
-# Input Variables
-########################################################################################################################
+###############################
+# Instance Configuration
+###############################
 
-#
-# Developer tips:
-#   - Below are some common module input variables
-#   - They should be updated for input variables applicable to the module being added
-#   - Use variable validation when possible
-#
+variable "create_new_instance" {
+  type        = bool
+  description = "Set to true to create a new BRS instance, false to use existing one."
+  default     = true
+}
+
+variable "instance_name" {
+  type        = string
+  description = "Name of the Backup & Recovery Service instance."
+  default     = "brs-test-instance"
+
+  validation {
+    condition     = length(var.instance_name) > 0
+    error_message = "instance_name must not be empty."
+  }
+}
 
 variable "name" {
   type        = string
-  description = "A descriptive name used to identify the resource instance."
+  description = "Service name for BRS (should be 'backup-recovery')"
+  default     = "backup-recovery"
 }
 
 variable "plan" {
   type        = string
-  description = "The name of the plan type supported by service."
-  default     = "standard"
+  description = "The plan type for the Backup and Recovery Service. Currently, only the premium plan is available."
+  default     = "premium"
+}
+
+variable "region" {
+  type        = string
+  description = "IBM Cloud region where the instance is located or will be created."
+  default     = "us-east"
+
   validation {
-    condition     = contains(["standard", "cos-one-rate-plan"], var.plan)
-    error_message = "The specified pricing plan is not available. The following plans are supported: 'standard', 'cos-one-rate-plan'"
+    condition     = contains(["us-south", "us-east", "eu-gb", "eu-de", "eu-fr2", "jp-tok", "au-syd", "ca-tor", "br-sao"], var.region)
+    error_message = "region must be a valid IBM Cloud region."
   }
 }
 
 variable "resource_group_id" {
   type        = string
-  description = "The ID of the resource group where you want to create the service."
+  description = "Resource group ID where the BRS instance exists or will be created."
+  default     = null # Must be provided or set via env
+
+  validation {
+    condition     = var.resource_group_id != null && length(var.resource_group_id) > 0
+    error_message = "resource_group_id is required and must not be empty."
+  }
 }
 
-variable "resource_tags" {
-  type        = list(string)
-  description = "List of resource tag to associate with the instance."
-  default     = []
+variable "provision_code" {
+  type        = string
+  description = "Custom provision code for BRS instance."
+}
+
+###############################
+# Connection Configuration
+###############################
+
+variable "create_new_connection" {
+  type        = bool
+  description = "Set to true to create a new data source connection, false to use existing."
+  default     = true
+}
+
+variable "connection_name" {
+  type        = string
+  description = "Name of the data source connection."
+  default     = "test-connection"
+
+  validation {
+    condition     = length(var.connection_name) > 0
+    error_message = "connection_name must not be empty."
+  }
+}
+
+variable "endpoint_type" {
+  type        = string
+  description = "Endpoint type: 'public' or 'private'."
+  default     = "public"
+
+  validation {
+    condition     = contains(["public", "private"], var.endpoint_type)
+    error_message = "endpoint_type must be 'public' or 'private'."
+  }
+}
+
+###############################
+# Timeouts
+###############################
+
+variable "timeouts" {
+  type = object({
+    create = string
+    update = string
+    delete = string
+  })
+  description = "Timeouts for create, update, and delete operations."
+  default = {
+    create = "60m"
+    update = "30m"
+    delete = "30m"
+  }
 }
