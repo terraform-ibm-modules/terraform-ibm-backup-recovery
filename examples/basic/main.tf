@@ -3,7 +3,7 @@
 ########################################################################################################################
 
 module "resource_group" {
-  source = "terraform-ibm-modules/resource-group/ibm"
+  source  = "terraform-ibm-modules/resource-group/ibm"
   version = "1.2.0"
 
   # If var.resource_group is null, create a new RG using prefix
@@ -27,22 +27,11 @@ module "brs" {
   resource_group_id     = module.resource_group.resource_group_id
   create_new_instance   = true
   create_new_connection = true
-  instance_name         = var.instance_name
-  connection_name       = var.connection_name
+  instance_name         = "brs-instance-${var.region}"
+  connection_name       = "brs-connection-${var.region}"
   region                = var.region
-  provision_code        = var.provision_code
-
+  ibmcloud_api_key      = var.ibmcloud_api_key
   # === Optional Overrides (defaults from module) ===
-  name                  = "backup-recovery"
-  plan                  = "premium"
-  endpoint_type         = "public"
-
-  timeouts = {
-    create = "90m"
-    update = "30m"
-    delete = "30m"
-  }
-
-  # Ensure resource group exists first
-  depends_on = [module.resource_group]
+  plan          = "premium"
+  endpoint_type = "public"
 }

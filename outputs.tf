@@ -1,12 +1,20 @@
 output "registration_token" {
-  value     = ibm_backup_recovery_connection_registration_token.registration_token.token
-  sensitive = true
+  description = "Registration token used to enroll data source connectors with the BRS connection. Expires in 24 hours. Must be kept secure."
+  value       = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].registration_token : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].registration_token
+  sensitive   = true
 }
 
 output "tenant_id" {
-  value = local.tenant_id
+  description = "BRS tenant ID in the format `<tenant-guid>/`. Required for API calls and agent configuration."
+  value       = local.tenant_id
 }
 
 output "connection_id" {
-  value = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].connection_id : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id
+  description = "Unique ID of the data source connection. Used to identify the connection in BRS for agent registration and management."
+  value       = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].connection_id : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id
+}
+
+output "brs_instance_guid" {
+  description = "GUID of the BRS instance."
+  value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0].guid : data.ibm_resource_instance.backup_recovery_instance[0].guid
 }

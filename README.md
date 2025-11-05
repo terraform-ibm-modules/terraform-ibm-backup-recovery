@@ -29,19 +29,19 @@ terraform {
   required_providers {
     ibm = {
       source  = "IBM-Cloud/ibm"
-      version = ">= 1.85.0, < 2.0.0"
+      version = "X.Y.Z"  # Lock into a provider version that satisfies the module constraints
     }
   }
 }
 
 provider "ibm" {
-  ibmcloud_api_key = var.ibmcloud_api_key
+  ibmcloud_api_key = "XXXXXXXXXX"  # replace with apikey value
   region           = var.region
 }
 
 module "brs" {
   source = "terraform-ibm-modules/backup-recovery/ibm"
-  # version = "1.0.0"  # Use specific version in production
+  version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
 
   resource_group_id     = "r134-abc123def456..."
   create_new_instance   = true
@@ -49,11 +49,9 @@ module "brs" {
   instance_name         = "my-brs-instance"
   connection_name       = "my-brs-connection"
   region                = "us-south"
-  provision_code        = "your-provision-code-from-ibm"
+  kms_root_key_crn      = "kms_root_key_crn"
 }
 ```
-
-> **Important**: `provision_code` is required for BRS instance creation and must be obtained from IBM.
 
 ### Required IAM Permissions
 
@@ -85,10 +83,10 @@ You need the following permissions to run this module:
 
 | Name | Type |
 |------|------|
-| [ibm_resource_instance.brs-instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_instance) | resource |
+| [ibm_resource_instance.backup_recovery_instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_instance) | resource |
 | [ibm_backup_recovery_data_source_connection.connection](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/backup_recovery_data_source_connection) | resource |
 | [ibm_backup_recovery_connection_registration_token.registration_token](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/backup_recovery_connection_registration_token) | resource |
-| [data.ibm_resource_instance.brs-instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/resource_instance) | data source |
+| [data.ibm_resource_instance.backup_recovery_instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/resource_instance) | data source |
 | [data.ibm_backup_recovery_data_source_connections.connections](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/backup_recovery_data_source_connections) | data source |
 
 ### Inputs
@@ -101,11 +99,9 @@ You need the following permissions to run this module:
 | <a name="input_connection_name"></a> [connection_name](#input\_connection_name) | Name of the data source connection. | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | IBM Cloud region for the BRS instance. | `string` | n/a | yes |
 | <a name="input_resource_group_id"></a> [resource_group_id](#input\_resource_group_id) | ID of the resource group. | `string` | n/a | yes |
-| <a name="input_provision_code"></a> [provision_code](#input\_provision_code) | Custom provision code from IBM (required for new instances). | `string` | n/a | yes |
-| <a name="input_name"></a> [name](#input\_name) | Service name (should be `backup-recovery`). | `string` | `"backup-recovery"` | no |
+| <a name="input_kms_root_key_crn"></a> [kms_root_key_crn](#input\_kms_root_key_crn) | CRN of the KMS root key. | `string` | n/a | no |
 | <a name="input_plan"></a> [plan](#input\_plan) | BRS plan (e.g., `premium`). | `string` | `"premium"` | no |
-| <a name="input_endpoint_type"></a> [endpoint_type](#input\_endpoint_type) | Connection endpoint: `public` or `private`. | `string` | `"public"` | no |
-| <a name="input_timeouts"></a> [timeouts](#input\_timeouts) | Timeout settings for create/update/delete. | `object({create=string, update=string, delete=string})` | `{create="60m", update="30m", delete="30m"}` | no |
+| <a name="input_endpoint_type"></a> [endpoint_type](#input\_endpoint_type) | Backup and Recovery service endpoint type to use for creating a data source connection: `public` or `private`. | `string` | `"public"` | no |
 
 ### Outputs
 
