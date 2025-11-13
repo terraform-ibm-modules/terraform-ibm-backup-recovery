@@ -73,7 +73,7 @@ variable "connection_name" {
 
 variable "endpoint_type" {
   type        = string
-  description = "The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection"
+  description = "The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection. Allowed values are 'public' or 'private'."
   default     = "public"
 
   validation {
