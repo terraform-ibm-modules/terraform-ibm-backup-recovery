@@ -16,12 +16,6 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   parameters_json = var.kms_key_crn != null ? jsonencode({
     "kms-root-key-crn" = var.kms_key_crn
   }) : null
-
-  timeouts {
-    create = "30m"
-    update = "30m"
-    delete = "30m"
-  }
 }
 
 resource "terraform_data" "delete_policies" {
