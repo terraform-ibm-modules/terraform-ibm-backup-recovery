@@ -18,6 +18,7 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   }) : null
 }
 
+# Script to remove all associated policies before deleting the instance.
 resource "terraform_data" "delete_policies" {
   count = var.create_new_instance ? 1 : 0
   input = {
