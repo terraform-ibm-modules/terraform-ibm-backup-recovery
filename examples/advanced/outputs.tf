@@ -1,38 +1,29 @@
-##############################################################################
+########################################################################################################################
 # Outputs
-##############################################################################
+########################################################################################################################
 
-#
-# Developer tips:
-#   - Include all relevant outputs from the modules being called in the example
-#
-
-output "account_id" {
-  description = "An alpha-numeric value identifying the account ID."
-  value       = module.cos.account_id
+output "brs_instance_guid" {
+  description = "GUID of the BRS instance."
+  value       = module.brs.brs_instance_guid
 }
 
-output "guid" {
-  description = "The GUID of the resource instance."
-  value       = module.cos.account_id
+output "tenant_id" {
+  description = "BRS tenant ID (with trailing slash)."
+  value       = module.brs.tenant_id
 }
 
-output "id" {
-  description = "The unique identifier of the resource instance."
-  value       = module.cos.id
+output "connection_id" {
+  description = "ID of the data source connection."
+  value       = module.brs.connection_id
 }
 
-output "crn" {
-  description = "The CRN of the resource instance."
-  value       = module.cos.crn
-}
-
-output "resource_group_name" {
-  description = "Resource group name."
-  value       = module.resource_group.resource_group_name
+output "registration_token" {
+  description = "Token to register backup agent. Use with caution — expires in 24h."
+  value       = module.brs.registration_token
+  sensitive   = true
 }
 
 output "resource_group_id" {
-  description = "Resource group ID."
+  description = "ID of the resource group used."
   value       = module.resource_group.resource_group_id
 }

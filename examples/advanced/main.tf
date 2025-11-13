@@ -1,5 +1,5 @@
 ########################################################################################################################
-# Resource group
+# Resource Group
 ########################################################################################################################
 
 module "resource_group" {
@@ -10,23 +10,49 @@ module "resource_group" {
   existing_resource_group_name = var.resource_group
 }
 
+##############################################################################
+# Create Key Protect resources
+##############################################################################
+
+locals {
+  key_ring_name = "brs-key-ring"
+  key_name      = "brs-key"
+}
+
+module "key_protect_all_inclusive" {
+  source                    = "terraform-ibm-modules/kms-all-inclusive/ibm"
+  version                   = "5.4.10"
+  key_protect_instance_name = "${var.prefix}-kp"
+  resource_group_id         = module.resource_group.resource_group_id
+  enable_metrics            = false
+  region                    = var.region
+  keys = [
+    {
+      key_ring_name = (local.key_ring_name)
+      keys = [
+        {
+          key_name = (local.key_name)
+        }
+      ]
+    }
+  ]
+  resource_tags = var.resource_tags
+}
+
 ########################################################################################################################
-# COS
+# Backup & Recovery Service (BRS) Module
 ########################################################################################################################
 
-#
-# Developer tips:
-#   - Call the local module / modules in the example to show how they can be consumed
-#   - Include the actual module source as a code comment like below so consumers know how to consume from correct location
-#
-
-module "cos" {
+module "brs" {
   source = "../.."
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
-  # source            = "terraform-ibm-modules/<replace>/ibm"
+  # source            = "terraform-ibm-modules/backup-recovery/ibm"
   # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "${var.prefix}-cos"
   resource_group_id = module.resource_group.resource_group_id
-  resource_tags     = var.resource_tags
-  plan              = "cos-one-rate-plan"
+  instance_name     = "${var.prefix}-instance"
+  connection_name   = "${var.prefix}-instance"
+  region            = var.region
+  ibmcloud_api_key  = var.ibmcloud_api_key
+  tags              = var.resource_tags
+  kms_key_crn       = module.key_protect_all_inclusive.keys["${local.key_ring_name}.${local.key_name}"].crn
 }

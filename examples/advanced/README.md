@@ -1,4 +1,6 @@
-# Advanced example
+# Basic example
 
-<!-- There is a pre-commit hook that will take the title of each example add include it in the repos main README.md  -->
-<!-- Add text below should describe exactly what resources are provisioned / configured by the example  -->
+An end-to-end basic example that will provision the following:
+- A new resource group if one is not passed in.
+- A Key Protect instance, a key ring, and a root key in the given resource group and region.
+- A new premium plan Backup and Recovery instance using the root level module with KMS encryption.

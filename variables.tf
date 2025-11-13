@@ -1,36 +1,83 @@
-########################################################################################################################
-# Input Variables
-########################################################################################################################
+###############################
+# Instance Configuration
+###############################
 
-#
-# Developer tips:
-#   - Below are some common module input variables
-#   - They should be updated for input variables applicable to the module being added
-#   - Use variable validation when possible
-#
-
-variable "name" {
+variable "ibmcloud_api_key" {
   type        = string
-  description = "A descriptive name used to identify the resource instance."
+  description = "The IBM Cloud platform API key needed to deploy IAM enabled resources."
+  sensitive   = true
+}
+
+variable "create_new_instance" {
+  type        = bool
+  description = "Set to true to create a new BRS instance, false to use existing one."
+  default     = true
+}
+
+variable "instance_name" {
+  type        = string
+  description = "Name of the Backup & Recovery Service instance."
+  default     = "brs-instance"
+  nullable    = false
 }
 
 variable "plan" {
   type        = string
-  description = "The name of the plan type supported by service."
-  default     = "standard"
+  description = "The plan type for the Backup and Recovery service. Currently, only the premium plan is available."
+  default     = "premium"
   validation {
-    condition     = contains(["standard", "cos-one-rate-plan"], var.plan)
-    error_message = "The specified pricing plan is not available. The following plans are supported: 'standard', 'cos-one-rate-plan'"
+    condition     = contains(["premium"], var.plan)
+    error_message = "Invalid plan type for the Backup and Recovery service."
   }
+}
+
+variable "tags" {
+  type        = list(string)
+  description = "Metadata labels describing this backup and recovery service instance, i.e. test"
+  default     = []
+}
+
+variable "region" {
+  type        = string
+  description = "IBM Cloud region where the instance is located or will be created."
+  default     = "us-east"
 }
 
 variable "resource_group_id" {
   type        = string
-  description = "The ID of the resource group where you want to create the service."
+  description = "Resource group ID where the BRS instance exists or will be created."
 }
 
-variable "resource_tags" {
-  type        = list(string)
-  description = "List of resource tag to associate with the instance."
-  default     = []
+variable "kms_key_crn" {
+  type        = string
+  description = "The CRN of the key management service key to encrypt the backup data."
+  default     = null
+}
+
+###############################
+# Connection Configuration
+###############################
+
+variable "create_new_connection" {
+  type        = bool
+  description = "Set to true to create a new data source connection, false to use existing."
+  default     = true
+}
+
+variable "connection_name" {
+  type        = string
+  description = "Name of the data source connection."
+  default     = "brs-connection"
+  nullable    = false
+}
+
+variable "endpoint_type" {
+  type        = string
+  description = "The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection. Allowed values are 'public' or 'private'."
+  default     = "public"
+
+  validation {
+    condition     = contains(["public", "private"], var.endpoint_type)
+    error_message = "endpoint_type must be 'public' or 'private'."
+  }
 }

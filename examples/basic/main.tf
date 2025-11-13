@@ -1,5 +1,5 @@
 ########################################################################################################################
-# Resource group
+# Resource Group
 ########################################################################################################################
 
 module "resource_group" {
@@ -11,21 +11,18 @@ module "resource_group" {
 }
 
 ########################################################################################################################
-# COS
+# Backup & Recovery Service (BRS) Module
 ########################################################################################################################
 
-#
-# Developer tips:
-#   - Call the local module / modules in the example to show how they can be consumed
-#   - include the actual module source as a code comment like below so consumers know how to consume from correct location
-#
-
-module "cos" {
+module "brs" {
   source = "../.."
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
-  # source            = "terraform-ibm-modules/<replace>/ibm"
+  # source            = "terraform-ibm-modules/backup-recovery/ibm"
   # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  name              = "${var.prefix}-cos"
   resource_group_id = module.resource_group.resource_group_id
-  resource_tags     = var.resource_tags
+  instance_name     = "${var.prefix}-instance"
+  connection_name   = "${var.prefix}-instance"
+  region            = var.region
+  ibmcloud_api_key  = var.ibmcloud_api_key
+  tags              = var.resource_tags
 }
