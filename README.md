@@ -43,7 +43,7 @@ module "brs" {
   source            = "terraform-ibm-modules/backup-recovery/ibm"
   version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
-  region            = "us-south"
+  region            = var.region
   ibmcloud_api_key  = "XXXXXXXXXXXXXX" # replace with apikey value
 }
 ```
