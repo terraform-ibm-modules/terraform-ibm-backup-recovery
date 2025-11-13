@@ -15,6 +15,7 @@ Use this module to automate BRS setup in IBM Cloud with Terraform.
 ## Overview
 * [terraform-ibm-backup-recovery](#terraform-ibm-backup-recovery)
 * [Examples](./examples)
+    * <div style="display: inline-block;"><a href="./examples/advanced">Basic example</a></div> <div style="display: inline-block; vertical-align: middle;"><a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=br-advanced-example&repository=github.com/NItishSh/terraform-ibm-backup-recovery/tree/main/examples/advanced" target="_blank"><img src="https://cloud.ibm.com/media/docs/images/icons/Deploy_to_cloud.svg" alt="Deploy to IBM Cloud button"></a></div>
     * <div style="display: inline-block;"><a href="./examples/basic">Basic example</a></div> <div style="display: inline-block; vertical-align: middle;"><a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=br-basic-example&repository=github.com/NItishSh/terraform-ibm-backup-recovery/tree/main/examples/basic" target="_blank"><img src="https://cloud.ibm.com/media/docs/images/icons/Deploy_to_cloud.svg" alt="Deploy to IBM Cloud button"></a></div>
 * [Contributing](#contributing)
 <!-- END OVERVIEW HOOK -->
