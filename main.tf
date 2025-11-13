@@ -19,7 +19,9 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   # }) : null
 }
 
-# Script to remove all associated policies before deleting the instance.
+# When an instance is created, it comes with a few default policies. If these policies are not deleted before
+# attempting to delete the instance, the deletion will fail. This is the expected default behavior — even when
+# an instance is created through the UI, it cannot be deleted until its associated policies are removed first.
 resource "terraform_data" "delete_policies" {
   count = var.create_new_instance ? 1 : 0
   input = {
