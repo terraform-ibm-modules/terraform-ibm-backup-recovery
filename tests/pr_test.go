@@ -13,7 +13,6 @@ const resourceGroup = "geretain-test-resources"
 
 // Ensure every example directory has a corresponding test
 const basicExampleDir = "examples/basic"
-const advancedExampleDir = "examples/advanced"
 
 func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptions {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
@@ -30,16 +29,6 @@ func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
 	options := setupOptions(t, "brs-basic", basicExampleDir)
-
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-}
-
-func TestRunAdvancedExample(t *testing.T) {
-	t.Skip()
-
-	options := setupOptions(t, "brs-adv", advancedExampleDir)
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")

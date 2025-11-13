@@ -13,9 +13,10 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   location          = var.region
   resource_group_id = var.resource_group_id
   tags              = var.tags
-  parameters_json = var.kms_key_crn != null ? jsonencode({
-    "kms-root-key-crn" = var.kms_key_crn
-  }) : null
+  # Support for KMS encryption has not yet been released.
+  # parameters_json = var.kms_key_crn != null ? jsonencode({
+  #   "kms-root-key-crn" = var.kms_key_crn
+  # }) : null
 }
 
 # Script to remove all associated policies before deleting the instance.

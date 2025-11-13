@@ -48,11 +48,11 @@ variable "resource_group_id" {
   description = "Resource group ID where the BRS instance exists or will be created."
 }
 
-variable "kms_key_crn" {
-  type        = string
-  description = "The CRN of the key management service key to encrypt the backup data."
-  default     = null
-}
+# variable "kms_key_crn" {
+#   type        = string
+#   description = "The CRN of the key management service key to encrypt the backup data."
+#   default     = null
+# }
 
 ###############################
 # Connection Configuration
