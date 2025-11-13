@@ -15,7 +15,7 @@ Use this module to automate BRS setup in IBM Cloud with Terraform.
 ## Overview
 * [terraform-ibm-backup-recovery](#terraform-ibm-backup-recovery)
 * [Examples](./examples)
-    * [Basic example](./examples/basic)
+    * <div style="display: inline-block;"><a href="./examples/basic">Basic example</a></div> <div style="display: inline-block; vertical-align: middle;"><a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=br-basic-example&repository=github.com/NItishSh/terraform-ibm-backup-recovery/tree/main/examples/basic" target="_blank"><img src="https://cloud.ibm.com/media/docs/images/icons/Deploy_to_cloud.svg" alt="Deploy to IBM Cloud button"></a></div>
 * [Contributing](#contributing)
 <!-- END OVERVIEW HOOK -->
 
@@ -35,7 +35,7 @@ terraform {
 }
 
 provider "ibm" {
-  ibmcloud_api_key = "XXXXXXXXXXXXXX"  # replace with apikey value
+  ibmcloud_api_key = "XXXXXXXXXXXXXX"  # replace with apikey value # pragma: allowlist secret
   region           = var.region
 }
 
@@ -44,7 +44,7 @@ module "brs" {
   version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
   region            = var.region
-  ibmcloud_api_key  = "XXXXXXXXXXXXXX" # replace with apikey value
+  ibmcloud_api_key  = "XXXXXXXXXXXXXX" # replace with apikey value # pragma: allowlist secret
 }
 ```
 
@@ -89,7 +89,7 @@ No modules.
 | <a name="input_connection_name"></a> [connection\_name](#input\_connection\_name) | Name of the data source connection. | `string` | `"brs-connection"` | no |
 | <a name="input_create_new_connection"></a> [create\_new\_connection](#input\_create\_new\_connection) | Set to true to create a new data source connection, false to use existing. | `bool` | `true` | no |
 | <a name="input_create_new_instance"></a> [create\_new\_instance](#input\_create\_new\_instance) | Set to true to create a new BRS instance, false to use existing one. | `bool` | `true` | no |
-| <a name="input_endpoint_type"></a> [endpoint\_type](#input\_endpoint\_type) | The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection | `string` | `"public"` | no |
+| <a name="input_endpoint_type"></a> [endpoint\_type](#input\_endpoint\_type) | The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection. Allowed values are 'public' or 'private'. | `string` | `"public"` | no |
 | <a name="input_ibmcloud_api_key"></a> [ibmcloud\_api\_key](#input\_ibmcloud\_api\_key) | The IBM Cloud platform API key needed to deploy IAM enabled resources. | `string` | n/a | yes |
 | <a name="input_instance_name"></a> [instance\_name](#input\_instance\_name) | Name of the Backup & Recovery Service instance. | `string` | `"brs-instance"` | no |
 | <a name="input_kms_key_crn"></a> [kms\_key\_crn](#input\_kms\_key\_crn) | The CRN of the key management service key to encrypt the backup data. | `string` | `null` | no |
