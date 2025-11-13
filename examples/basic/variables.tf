@@ -4,6 +4,11 @@ variable "ibmcloud_api_key" {
   sensitive   = true
 }
 
+variable "resource_group" {
+  type        = string
+  description = "An existing resource group name to use for this example, if unset a new resource group will be created"
+  default     = null
+}
 
 variable "prefix" {
   type        = string
@@ -11,19 +16,14 @@ variable "prefix" {
   default     = "brs-basic"
 }
 
+variable "resource_tags" {
+  type        = list(string)
+  description = "Optional list of tags to be added to created resources"
+  default     = []
+}
+
 variable "region" {
   type        = string
   description = "IBM Cloud region where the instance is located or will be created."
   default     = "us-east"
-
-  validation {
-    condition     = contains(["us-south", "us-east", "eu-gb", "eu-de", "eu-fr2", "jp-tok", "au-syd", "ca-tor", "br-sao"], var.region)
-    error_message = "region must be a valid IBM Cloud region."
-  }
-}
-
-variable "resource_group" {
-  type        = string
-  description = "Name of an existing resource group to use. If null, a new resource group will be created using the prefix."
-  default = "Default"
 }

@@ -35,21 +35,16 @@ terraform {
 }
 
 provider "ibm" {
-  ibmcloud_api_key = "XXXXXXXXXX"  # replace with apikey value
+  ibmcloud_api_key = "XXXXXXXXXXXXXX"  # replace with apikey value
   region           = var.region
 }
 
 module "brs" {
-  source = "terraform-ibm-modules/backup-recovery/ibm"
+  source            = "terraform-ibm-modules/backup-recovery/ibm"
   version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-
-  resource_group_id     = "r134-abc123def456..."
-  create_new_instance   = true
-  create_new_connection = true
-  instance_name         = "my-brs-instance"
-  connection_name       = "my-brs-connection"
-  region                = "us-south"
-  kms_root_key_crn      = "kms_root_key_crn"
+  resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
+  region            = "us-south"
+  ibmcloud_api_key  = "XXXXXXXXXXXXXX" # replace with apikey value
 }
 ```
 
@@ -75,42 +70,42 @@ You need the following permissions to run this module:
 
 ### Modules
 
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_resource_group"></a> [resource_group](#module\_resource_group) | terraform-ibm-modules/resource-group/ibm | 1.2.0 |
+No modules.
 
 ### Resources
 
 | Name | Type |
 |------|------|
-| [ibm_resource_instance.backup_recovery_instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_instance) | resource |
 | [ibm_backup_recovery_data_source_connection.connection](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/backup_recovery_data_source_connection) | resource |
-| [ibm_backup_recovery_connection_registration_token.registration_token](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/backup_recovery_connection_registration_token) | resource |
-| [data.ibm_resource_instance.backup_recovery_instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/resource_instance) | data source |
-| [data.ibm_backup_recovery_data_source_connections.connections](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/backup_recovery_data_source_connections) | data source |
+| [ibm_resource_instance.backup_recovery_instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_instance) | resource |
+| [terraform_data.delete_policies](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [ibm_backup_recovery_data_source_connections.connections](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/backup_recovery_data_source_connections) | data source |
+| [ibm_resource_instance.backup_recovery_instance](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/resource_instance) | data source |
 
 ### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_create_new_instance"></a> [create_new_instance](#input\_create_new_instance) | Set to `true` to create a new BRS instance; `false` to use existing. | `bool` | `true` | no |
-| <a name="input_create_new_connection"></a> [create_new_connection](#input\_create_new_connection) | Set to `true` to create a new connection; `false` to use existing. | `bool` | `true` | no |
-| <a name="input_instance_name"></a> [instance_name](#input\_instance_name) | Name of the BRS instance. | `string` | n/a | yes |
-| <a name="input_connection_name"></a> [connection_name](#input\_connection_name) | Name of the data source connection. | `string` | n/a | yes |
-| <a name="input_region"></a> [region](#input\_region) | IBM Cloud region for the BRS instance. | `string` | n/a | yes |
-| <a name="input_resource_group_id"></a> [resource_group_id](#input\_resource_group_id) | ID of the resource group. | `string` | n/a | yes |
-| <a name="input_kms_root_key_crn"></a> [kms_root_key_crn](#input\_kms_root_key_crn) | CRN of the KMS root key. | `string` | n/a | no |
-| <a name="input_plan"></a> [plan](#input\_plan) | BRS plan (e.g., `premium`). | `string` | `"premium"` | no |
-| <a name="input_endpoint_type"></a> [endpoint_type](#input\_endpoint_type) | Backup and Recovery service endpoint type to use for creating a data source connection: `public` or `private`. | `string` | `"public"` | no |
+| <a name="input_connection_name"></a> [connection\_name](#input\_connection\_name) | Name of the data source connection. | `string` | `"brs-connection"` | no |
+| <a name="input_create_new_connection"></a> [create\_new\_connection](#input\_create\_new\_connection) | Set to true to create a new data source connection, false to use existing. | `bool` | `true` | no |
+| <a name="input_create_new_instance"></a> [create\_new\_instance](#input\_create\_new\_instance) | Set to true to create a new BRS instance, false to use existing one. | `bool` | `true` | no |
+| <a name="input_endpoint_type"></a> [endpoint\_type](#input\_endpoint\_type) | The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection | `string` | `"public"` | no |
+| <a name="input_ibmcloud_api_key"></a> [ibmcloud\_api\_key](#input\_ibmcloud\_api\_key) | The IBM Cloud platform API key needed to deploy IAM enabled resources. | `string` | n/a | yes |
+| <a name="input_instance_name"></a> [instance\_name](#input\_instance\_name) | Name of the Backup & Recovery Service instance. | `string` | `"brs-instance"` | no |
+| <a name="input_kms_key_crn"></a> [kms\_key\_crn](#input\_kms\_key\_crn) | The CRN of the key management service key to encrypt the backup data. | `string` | `null` | no |
+| <a name="input_plan"></a> [plan](#input\_plan) | The plan type for the Backup and Recovery service. Currently, only the premium plan is available. | `string` | `"premium"` | no |
+| <a name="input_region"></a> [region](#input\_region) | IBM Cloud region where the instance is located or will be created. | `string` | `"us-east"` | no |
+| <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | Resource group ID where the BRS instance exists or will be created. | `string` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | Metadata labels describing this backup and recovery service instance, i.e. test | `list(string)` | `[]` | no |
 
 ### Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_brs_instance_guid"></a> [brs_instance_guid](#output\_brs_instance_guid) | GUID of the BRS instance. |
-| <a name="output_tenant_id"></a> [tenant_id](#output\_tenant_id) | Tenant ID with trailing slash (e.g., `abc123/`), used in API calls. |
-| <a name="output_connection_id"></a> [connection_id](#output\_connection_id) | ID of the data source connection. |
-| <a name="output_registration_token"></a> [registration_token](#output\_registration_token) | **Sensitive** token to register backup agent (expires in 24h). |
+| <a name="output_brs_instance_guid"></a> [brs\_instance\_guid](#output\_brs\_instance\_guid) | GUID of the BRS instance. |
+| <a name="output_connection_id"></a> [connection\_id](#output\_connection\_id) | Unique ID of the data source connection. Used to identify the connection in BRS for agent registration and management. |
+| <a name="output_registration_token"></a> [registration\_token](#output\_registration\_token) | Registration token used to enroll data source connectors with the BRS connection. Expires in 24 hours. Must be kept secure. |
+| <a name="output_tenant_id"></a> [tenant\_id](#output\_tenant\_id) | BRS tenant ID in the format `<tenant-guid>/`. Required for API calls and agent configuration. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ---

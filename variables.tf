@@ -2,6 +2,12 @@
 # Instance Configuration
 ###############################
 
+variable "ibmcloud_api_key" {
+  type        = string
+  description = "The IBM Cloud platform API key needed to deploy IAM enabled resources."
+  sensitive   = true
+}
+
 variable "create_new_instance" {
   type        = bool
   description = "Set to true to create a new BRS instance, false to use existing one."
@@ -11,34 +17,30 @@ variable "create_new_instance" {
 variable "instance_name" {
   type        = string
   description = "Name of the Backup & Recovery Service instance."
-  default     = "brsinstance"
-
-  validation {
-    condition     = length(var.instance_name) > 0
-    error_message = "instance_name must not be empty."
-  }
+  default     = "brs-instance"
+  nullable    = false
 }
 
 variable "plan" {
   type        = string
-  description = "The plan type for the Backup and Recovery Service. Currently, only the premium plan is available."
+  description = "The plan type for the Backup and Recovery service. Currently, only the premium plan is available."
   default     = "premium"
-
   validation {
-    condition     = var.plan == "premium"
-    error_message = "The Backup and Recovery Service currently supports only the 'premium' plan. Use plan = \"premium\"."
+    condition     = contains(["premium"], var.plan)
+    error_message = "Invalid plan type for the Backup and Recovery service."
   }
+}
+
+variable "tags" {
+  type        = list(string)
+  description = "Metadata labels describing this backup and recovery service instance, i.e. test"
+  default     = []
 }
 
 variable "region" {
   type        = string
   description = "IBM Cloud region where the instance is located or will be created."
   default     = "us-east"
-
-  validation {
-    condition     = contains(["us-south", "us-east", "eu-gb", "eu-de", "eu-fr2", "jp-tok", "au-syd", "ca-tor", "br-sao"], var.region)
-    error_message = "region must be a valid IBM Cloud region."
-  }
 }
 
 variable "resource_group_id" {
@@ -46,10 +48,10 @@ variable "resource_group_id" {
   description = "Resource group ID where the BRS instance exists or will be created."
 }
 
-variable "kms_root_key_crn" {
+variable "kms_key_crn" {
   type        = string
-  description = "CRN of the KMS root key"
-  default     = ""
+  description = "The CRN of the key management service key to encrypt the backup data."
+  default     = null
 }
 
 ###############################
@@ -65,12 +67,8 @@ variable "create_new_connection" {
 variable "connection_name" {
   type        = string
   description = "Name of the data source connection."
-  default     = "test-connection"
-
-  validation {
-    condition     = length(var.connection_name) > 0
-    error_message = "connection_name must not be empty."
-  }
+  default     = "brs-connection"
+  nullable    = false
 }
 
 variable "endpoint_type" {
@@ -82,9 +80,4 @@ variable "endpoint_type" {
     condition     = contains(["public", "private"], var.endpoint_type)
     error_message = "endpoint_type must be 'public' or 'private'."
   }
-}
-variable "ibmcloud_api_key" {
-  type        = string
-  description = "The IBM Cloud platform API key needed to deploy IAM enabled resources."
-  sensitive   = true
 }
