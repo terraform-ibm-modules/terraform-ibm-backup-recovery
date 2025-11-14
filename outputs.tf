@@ -1,30 +1,20 @@
-########################################################################################################################
-# Outputs
-########################################################################################################################
-
-#
-# Developer tips:
-#   - Below are some good practise sample outputs
-#   - They should be updated for outputs applicable to the module being added
-#   - Use variable validation when possible
-#
-
-output "account_id" {
-  description = "An alpha-numeric value identifying the account ID."
-  value       = ibm_resource_instance.cos_instance.account_id
+output "registration_token" {
+  description = "Registration token used to enroll data source connectors with the BRS connection. Expires in 24 hours. Must be kept secure."
+  value       = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].registration_token : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].registration_token
+  sensitive   = true
 }
 
-output "guid" {
-  description = "The GUID of the resource instance."
-  value       = ibm_resource_instance.cos_instance.guid
+output "tenant_id" {
+  description = "BRS tenant ID in the format `<tenant-guid>/`. Required for API calls and agent configuration."
+  value       = local.tenant_id
 }
 
-output "id" {
-  description = "The unique identifier of the resource instance."
-  value       = ibm_resource_instance.cos_instance.id
+output "connection_id" {
+  description = "Unique ID of the data source connection. Used to identify the connection in BRS for agent registration and management."
+  value       = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].connection_id : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id
 }
 
-output "crn" {
-  description = "The CRN of the resource instance."
-  value       = ibm_resource_instance.cos_instance.crn
+output "brs_instance_guid" {
+  description = "GUID of the BRS instance."
+  value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0].guid : data.ibm_resource_instance.backup_recovery_instance[0].guid
 }
