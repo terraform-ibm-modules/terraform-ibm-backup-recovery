@@ -30,18 +30,18 @@ iam_token=$(echo "${iam_response}" | jq -r '.access_token')
 # ---- List and Delete policies -------------------------------------------------
 echo "Starting policy cleanup (with retries)..."
 
-MAX_ROUNDS=15
-ROUND=0
+MAX_ATTEMPTS=15
+ATTEMPT=0
 
-while (( ROUND < MAX_ROUNDS )); do
-  ROUND=$((ROUND + 1))
-  echo "=== Cleanup round $ROUND/$MAX_ROUNDS ==="
+while ((ATTEMPT < MAX_ATTEMPTS)); do
+  ATTEMPT=$((ATTEMPT + 1))
+  echo "=== Cleanup attempt $ATTEMPT/$MAX_ATTEMPTS ==="
 
   # Get fresh list of policy IDs – safe even when .policies is missing or empty
   POLICY_IDS=$(curl -s \
     -H "Authorization: Bearer ${iam_token}" \
     -H "X-IBM-Tenant-Id: ${TENANT}" \
-    "https://${URL}/v2/data-protect/policies" | \
+    "https://${URL}/v2/data-protect/policies" |
     jq -r '.policies // [] | .[].id // empty')
 
   # If nothing left → we are done
@@ -57,28 +57,32 @@ while (( ROUND < MAX_ROUNDS )); do
     echo -n "Deleting policy $id ... "
 
     for attempt in {1..5}; do
-      if curl -s -X DELETE -o /dev/null --write-out "%{http_code}" \
-        -H "Authorization: Bearer ${iam_token}" \
-        -H "X-IBM-Tenant-Id: ${TENANT}" \
-        "https://${URL}/v2/data-protect/policies/${id}" | grep -qE '200|204'; then
+      result=$(curl -i -H "Authorization: Bearer ${iam_token}" -H "X-IBM-Tenant-Id: ${TENANT}" -X DELETE "https://${URL}/v2/data-protect/policies/${id}" 2>/dev/null)
+      status_code=$(echo "$result" | head -n 1 | cut -d$' ' -f2)
+      if [ "${status_code}" == "204" ] || [ "${status_code}" == "200" ]; then
         echo "OK"
         break
       else
-        echo -n "failed (attempt $attempt), "
-        (( attempt == 5 )) && echo "giving up on this policy for this round" || sleep 4
+        echo -n "failed (attempt $attempt)"
+        echo "$result"
+        if ((attempt == 5)); then
+          echo "giving up on this policy for this attempt"
+        else
+          sleep 5
+        fi
       fi
     done
   done
 
   if [[ -n "$POLICY_IDS" ]]; then
-    echo "Some policies still present, waiting 20 seconds before next round..."
+    echo "Some policies still present, waiting 20 seconds before next attempt..."
     sleep 20
   fi
 done
 
 # Final check + friendly message
-if (( ROUND >= MAX_ROUNDS )); then
-  echo "WARNING: Reached maximum rounds. Some policies may still exist." >&2
+if ((ATTEMPT >= MAX_ATTEMPTS)); then
+  echo "WARNING: Reached maximum attempts. Some policies may still exist." >&2
 else
   echo "All policies successfully cleaned up."
 fi
