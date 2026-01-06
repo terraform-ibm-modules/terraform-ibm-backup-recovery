@@ -1,6 +1,6 @@
 output "registration_token" {
   description = "Registration token used to enroll data source connectors with the BRS connection. Expires in 24 hours. Must be kept secure."
-  value       = ibm_backup_recovery_connection_registration_token.registration_token
+  value       = ibm_backup_recovery_connection_registration_token.registration_token.registration_token
   sensitive   = true
 }
 
