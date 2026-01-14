@@ -109,6 +109,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_brs_instance"></a> [brs\_instance](#output\_brs\_instance) | Details of the BRS instance. |
 | <a name="output_brs_instance_crn"></a> [brs\_instance\_crn](#output\_brs\_instance\_crn) | CRN of the BRS instance. |
 | <a name="output_brs_instance_guid"></a> [brs\_instance\_guid](#output\_brs\_instance\_guid) | GUID of the BRS instance. |
 | <a name="output_connection_id"></a> [connection\_id](#output\_connection\_id) | Unique ID of the data source connection. Used to identify the connection in BRS for agent registration and management. |
