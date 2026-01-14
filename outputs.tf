@@ -18,3 +18,8 @@ output "brs_instance_guid" {
   description = "GUID of the BRS instance."
   value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0].guid : data.ibm_resource_instance.backup_recovery_instance[0].guid
 }
+
+output "brs_instance_crn" {
+  description = "CRN of the BRS instance."
+  value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0].crn : data.ibm_resource_instance.backup_recovery_instance[0].crn
+}

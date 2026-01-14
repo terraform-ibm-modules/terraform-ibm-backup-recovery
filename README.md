@@ -70,7 +70,7 @@ You need the following permissions to run this module:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
-| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.85.0, < 2.0.0 |
+| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.87.0, < 2.0.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.13.1, < 1.0.0 |
 
 ### Modules
@@ -108,6 +108,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_brs_instance_crn"></a> [brs\_instance\_crn](#output\_brs\_instance\_crn) | CRN of the BRS instance. |
 | <a name="output_brs_instance_guid"></a> [brs\_instance\_guid](#output\_brs\_instance\_guid) | GUID of the BRS instance. |
 | <a name="output_connection_id"></a> [connection\_id](#output\_connection\_id) | Unique ID of the data source connection. Used to identify the connection in BRS for agent registration and management. |
 | <a name="output_registration_token"></a> [registration\_token](#output\_registration\_token) | Registration token used to enroll data source connectors with the BRS connection. Expires in 24 hours. Must be kept secure. |
