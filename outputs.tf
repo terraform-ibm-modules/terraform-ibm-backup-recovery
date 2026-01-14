@@ -33,6 +33,7 @@ output "brs_instance_crn" {
   description = "CRN of the BRS instance."
   value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0].crn : data.ibm_resource_instance.backup_recovery_instance[0].crn
 }
+
 output "brs_instance" {
   description = "Details of the BRS instance."
   value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
