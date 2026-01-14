@@ -35,5 +35,5 @@ output "connection_name" {
 
 output "brs_instance" {
   description = "Details of the BRS instance."
-  value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
+  value       = local.backup_recovery_instance
 }
