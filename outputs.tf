@@ -11,20 +11,20 @@ output "tenant_id" {
 
 output "connection_id" {
   description = "Unique ID of the data source connection. Used to identify the connection in BRS for agent registration and management."
-  value       = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].connection_id : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id
+  value       = local.backup_recovery_connection_id
 }
 
 output "brs_instance_guid" {
   description = "GUID of the BRS instance."
-  value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0].guid : data.ibm_resource_instance.backup_recovery_instance[0].guid
+  value       = local.backup_recovery_instance.guid
 }
 
 output "brs_instance_crn" {
   description = "CRN of the BRS instance."
-  value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0].crn : data.ibm_resource_instance.backup_recovery_instance[0].crn
+  value       = local.backup_recovery_instance.crn
 }
 
 output "brs_instance" {
   description = "Details of the BRS instance."
-  value       = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
+  value       = local.backup_recovery_instance
 }
