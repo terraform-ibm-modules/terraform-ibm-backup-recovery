@@ -1,6 +1,7 @@
 
 locals {
   backup_recovery_instance            = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
+  backup_recovery_connection_id       = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].connection_id : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id
   tenant_id                           = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url = local.backup_recovery_instance.extensions["endpoints.public"]
 }
@@ -71,12 +72,21 @@ resource "ibm_backup_recovery_data_source_connection" "connection" {
   region          = var.region
 }
 
-# there is a bug in the ibm_backup_recovery_connection_registration_token so currently using ibm_backup_recovery_data_source_connection.connection[0].registration_token
-# once this bug is resolved we can force create new ibm_backup_recovery_connection_registration_token as token expires every 24 hours.
-# resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
-#   connection_id   = local.backup_recovery_connection.connection_id
-#   x_ibm_tenant_id = local.tenant_id
-#   endpoint_type   = var.endpoint_type
-#   instance_id     = local.backup_recovery_instance.guid
-#   region          = var.region
-# }
+resource "time_rotating" "token_rotation" {
+  rotation_days = 1
+}
+
+resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
+  connection_id   = local.backup_recovery_connection_id
+  x_ibm_tenant_id = local.tenant_id
+  endpoint_type   = var.endpoint_type
+  instance_id     = local.backup_recovery_instance.guid
+  region          = var.region
+
+  # This forces a replacement every time the time_rotating resource rotates
+  lifecycle {
+    replace_triggered_by = [
+      time_rotating.token_rotation
+    ]
+  }
+}
