@@ -108,6 +108,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_brs_connection"></a> [brs\_connection](#output\_brs\_connection) | Details of the data source connection. |
 | <a name="output_brs_instance"></a> [brs\_instance](#output\_brs\_instance) | Details of the BRS instance. |
 | <a name="output_brs_instance_crn"></a> [brs\_instance\_crn](#output\_brs\_instance\_crn) | CRN of the BRS instance. |
 | <a name="output_brs_instance_guid"></a> [brs\_instance\_guid](#output\_brs\_instance\_guid) | GUID of the BRS instance. |

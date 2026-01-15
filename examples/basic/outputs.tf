@@ -2,9 +2,9 @@
 # Outputs
 ########################################################################################################################
 
-output "brs_instance_guid" {
-  description = "GUID of the BRS instance."
-  value       = module.brs.brs_instance_guid
+output "brs_instance" {
+  description = "Details of the BRS instance."
+  value       = module.brs.brs_instance
 }
 
 output "tenant_id" {
@@ -12,9 +12,10 @@ output "tenant_id" {
   value       = module.brs.tenant_id
 }
 
-output "connection_id" {
-  description = "ID of the data source connection."
-  value       = module.brs.connection_id
+output "brs_connection" {
+  description = "Details of the data source connection."
+  value       = module.brs.brs_connection
+  sensitive   = true
 }
 
 output "registration_token" {
