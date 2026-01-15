@@ -11,7 +11,7 @@ output "tenant_id" {
 
 output "connection_id" {
   description = "Unique ID of the data source connection. Used to identify the connection in BRS for agent registration and management."
-  value       = local.backup_recovery_connection_id
+  value       = local.backup_recovery_connection.connection_id
 }
 
 output "brs_instance_guid" {
@@ -27,4 +27,8 @@ output "brs_instance_crn" {
 output "brs_instance" {
   description = "Details of the BRS instance."
   value       = local.backup_recovery_instance
+}
+output "connection_name" {
+  description = "Name of the data source connection."
+  value       = local.backup_recovery_connection.connection_name
 }
