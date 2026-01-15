@@ -32,8 +32,3 @@ output "connection_name" {
   description = "Name of the data source connection."
   value       = local.backup_recovery_connection.connection_name
 }
-
-output "brs_instance" {
-  description = "Details of the BRS instance."
-  value       = local.backup_recovery_instance
-}
