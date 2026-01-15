@@ -31,4 +31,5 @@ output "brs_instance" {
 output "brs_connection" {
   description = "Details of the data source connection."
   value       = local.backup_recovery_connection
+  sensitive   = true
 }
