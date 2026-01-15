@@ -28,8 +28,7 @@ output "brs_instance" {
   description = "Details of the BRS instance."
   value       = local.backup_recovery_instance
 }
-output "brs_connection" {
-  description = "Details of the data source connection."
-  value       = local.backup_recovery_connection
-  sensitive   = true
+output "connection_name" {
+  description = "Name of the data source connection."
+  value       = local.backup_recovery_connection.connection_name
 }
