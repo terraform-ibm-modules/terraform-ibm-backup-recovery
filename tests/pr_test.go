@@ -5,11 +5,26 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 )
 
 // Use existing resource group
 const resourceGroup = "geretain-test-resources"
+
+// Current supported regions
+var validRegions = []string{
+	"us-south",
+	// "us-east", // ignore until issues in this regions are resolved
+	"eu-de",
+	"eu-gb",
+	"eu-es",
+	"jp-tok",
+	"jp-osa",
+	"au-syd",
+	"ca-tor",
+	"br-sao",
+}
 
 // Ensure every example directory has a corresponding test
 const basicExampleDir = "examples/basic"
@@ -20,6 +35,7 @@ func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptio
 		TerraformDir:  dir,
 		Prefix:        prefix,
 		ResourceGroup: resourceGroup,
+		Region:        validRegions[common.CryptoIntn(len(validRegions))],
 	})
 	return options
 }

@@ -1,7 +1,7 @@
 
 locals {
   backup_recovery_instance            = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
-  backup_recovery_connection_id       = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0].connection_id : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id
+  backup_recovery_connection          = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0]
   tenant_id                           = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url = local.backup_recovery_instance.extensions["endpoints.public"]
 }
@@ -77,7 +77,7 @@ resource "time_rotating" "token_rotation" {
 }
 
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
-  connection_id   = local.backup_recovery_connection_id
+  connection_id   = local.backup_recovery_connection.connection_id
   x_ibm_tenant_id = local.tenant_id
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid

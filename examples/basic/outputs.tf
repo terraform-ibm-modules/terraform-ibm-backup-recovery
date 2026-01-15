@@ -2,9 +2,9 @@
 # Outputs
 ########################################################################################################################
 
-output "brs_instance_guid" {
-  description = "GUID of the BRS instance."
-  value       = module.brs.brs_instance_guid
+output "brs_instance" {
+  description = "Details of the BRS instance."
+  value       = module.brs.brs_instance
 }
 
 output "tenant_id" {
@@ -12,11 +12,15 @@ output "tenant_id" {
   value       = module.brs.tenant_id
 }
 
-output "connection_id" {
+output "brs_connection_name" {
+  description = "Name of the data source connection."
+  value       = module.brs.connection_name
+}
+
+output "brs_connection_id" {
   description = "ID of the data source connection."
   value       = module.brs.connection_id
 }
-
 output "registration_token" {
   description = "Token to register backup agent. Use with caution — expires in 24h."
   value       = module.brs.registration_token
