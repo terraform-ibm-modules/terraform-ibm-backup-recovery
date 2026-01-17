@@ -10,5 +10,5 @@ An end-to-end basic example that will provision the following:
 - A new premium plan Backup and Recovery instance using the root level module.
 
 <!-- BEGIN SCHEMATICS DEPLOY TIP HOOK -->
-:exclamation: Ctrl/Cmd+Click or right-click to open deploy button in a new tab
+:information_source: Ctrl/Cmd+Click or right-click on the Schematics deploy button to open in a new tab
 <!-- END SCHEMATICS DEPLOY TIP HOOK -->
