@@ -4,6 +4,19 @@ locals {
   backup_recovery_connection          = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0]
   tenant_id                           = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url = local.backup_recovery_instance.extensions["endpoints.public"]
+  binaries_path                       = "/tmp"
+}
+
+
+resource "terraform_data" "install_dependencies" {
+  count = var.install_required_binaries && var.create_new_instance
+  triggers_replace = {
+    api_key = var.ibmcloud_api_key
+  }
+  provisioner "local-exec" {
+    command     = "${path.module}/scripts/install_binaries.sh ${local.binaries_path}"
+    interpreter = ["/bin/bash", "-c"]
+  }
 }
 
 resource "ibm_resource_instance" "backup_recovery_instance" {
@@ -24,11 +37,15 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
 # attempting to delete the instance, the deletion will fail. This is the expected default behavior — even when
 # an instance is created through the UI, it cannot be deleted until its associated policies are removed first.
 resource "terraform_data" "delete_policies" {
+  depends_on = [
+    terraform_data.install_dependencies
+  ]
   count = var.create_new_instance ? 1 : 0
   input = {
     url           = local.backup_recovery_instance_public_url
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
+    binaries_path = local.binaries_path
   }
   # api key in triggers_replace to avoid it to be printed out in clear text in terraform_data output
   triggers_replace = {
@@ -36,7 +53,7 @@ resource "terraform_data" "delete_policies" {
   }
   provisioner "local-exec" {
     when        = destroy
-    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type}"
+    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${self.input.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
