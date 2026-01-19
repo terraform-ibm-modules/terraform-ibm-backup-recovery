@@ -5,6 +5,7 @@ URL=$1
 TENANT=$2
 ENDPOINT_TYPE=$3
 
+export PATH=$PATH:${4:-"/tmp"}
 # decide the iam endpoint depending upon the IBMCLOUD_IAM_API_ENDPOINT env variable set by the user and
 # whether provider visibility is public or private
 iam_cloud_endpoint="${IBMCLOUD_IAM_API_ENDPOINT:-"iam.cloud.ibm.com"}"
