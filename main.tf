@@ -9,7 +9,7 @@ locals {
 
 
 resource "terraform_data" "install_dependencies" {
-  count = var.install_required_binaries && var.create_new_instance
+  count = (var.install_required_binaries && var.create_new_instance) ? 1 : 0
   triggers_replace = {
     api_key = var.ibmcloud_api_key
   }
