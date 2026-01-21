@@ -15,7 +15,7 @@ module "resource_group" {
 ########################################################################################################################
 
 module "brs" {
-  source = "../.."
+  source = "git::https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery.git?ref=install_binary_dependency"
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
   # source            = "terraform-ibm-modules/backup-recovery/ibm"
   # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
