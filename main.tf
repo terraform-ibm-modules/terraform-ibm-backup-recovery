@@ -14,7 +14,7 @@ resource "terraform_data" "install_dependencies" {
     api_key = var.ibmcloud_api_key
   }
   provisioner "local-exec" {
-    command     = "${path.module}/scripts/install_binaries.sh ${local.binaries_path}"
+    command     = "${path.module}/scripts/install-binaries.sh ${local.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
   }
 }
