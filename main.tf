@@ -10,11 +10,12 @@ locals {
 
 resource "terraform_data" "install_dependencies" {
   count = (var.install_required_binaries && var.create_new_instance) ? 1 : 0
-  triggers_replace = {
-    api_key = var.ibmcloud_api_key
+  input = {
+    binaries_path = local.binaries_path
   }
   provisioner "local-exec" {
-    command     = "${path.module}/scripts/install-binaries.sh ${local.binaries_path}"
+    when        = destroy
+    command     = "${path.module}/scripts/install-binaries.sh ${self.input.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
   }
 }
