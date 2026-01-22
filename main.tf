@@ -10,12 +10,12 @@ locals {
 
 resource "terraform_data" "install_dependencies" {
   count = (var.install_required_binaries && var.create_new_instance) ? 1 : 0
-  input = {
+  triggers_replace = {
     binaries_path = local.binaries_path
   }
   provisioner "local-exec" {
     when        = destroy
-    command     = "${path.module}/scripts/install-binaries.sh ${self.input.binaries_path}"
+    command     = "${path.module}/scripts/install-binaries.sh ${self.triggers_replace.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
   }
 }
