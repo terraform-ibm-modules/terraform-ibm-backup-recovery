@@ -10,7 +10,7 @@ locals {
 
 resource "terraform_data" "install_dependencies" {
   count = (var.install_required_binaries && var.create_new_instance) ? 1 : 0
-    input = {
+  input = {
     binaries_path = local.binaries_path
   }
   provisioner "local-exec" {
