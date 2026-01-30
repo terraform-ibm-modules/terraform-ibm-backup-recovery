@@ -1,7 +1,7 @@
 # Advanced example
 
 <!-- BEGIN SCHEMATICS DEPLOY HOOK -->
-<a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=br-advanced-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples/advanced"><img src="https://img.shields.io/badge/Deploy%20with IBM%20Cloud%20Schematics-0f62fe?logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom;"></a>
+<a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=backup-recovery-advanced-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples/advanced"><img src="https://img.shields.io/badge/Deploy%20with IBM%20Cloud%20Schematics-0f62fe?logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom;"></a>
 <!-- END SCHEMATICS DEPLOY HOOK -->
 
 
@@ -11,5 +11,5 @@ An end-to-end advanced example that will demonstrate the following:
 - Creating a new data source connection in that existing instance.
 
 <!-- BEGIN SCHEMATICS DEPLOY TIP HOOK -->
-:exclamation: Ctrl/Cmd+Click or right-click to open deploy button in a new tab
+:information_source: Ctrl/Cmd+Click or right-click on the Schematics deploy button to open in a new tab
 <!-- END SCHEMATICS DEPLOY TIP HOOK -->
