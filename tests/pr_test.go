@@ -114,7 +114,7 @@ func TestRunAdvancedExampleExistingInstance(t *testing.T) {
 func TestRunAdvancedExampleCreation(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-adv", advancedExampleDir)
+	options := setupOptions(t, "brs-adv-create", advancedExampleDir)
 	options.TerraformVars = map[string]interface{}{
 		"prefix":         options.Prefix,
 		"resource_group": resourceGroup,
