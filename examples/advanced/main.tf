@@ -20,9 +20,6 @@ module "brs" {
   # source            = "terraform-ibm-modules/backup-recovery/ibm"
   # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   resource_group_id = module.resource_group.resource_group_id
-  instance_name     = "${var.prefix}-instance"
+  brs_instance_crn  = var.brs_instance_crn
   connection_name   = "${var.prefix}-connection"
-  region            = var.region
-  ibmcloud_api_key  = var.ibmcloud_api_key
-  tags              = var.resource_tags
 }

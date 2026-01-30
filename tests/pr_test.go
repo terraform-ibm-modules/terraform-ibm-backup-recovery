@@ -2,11 +2,18 @@
 package test
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
+
+	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/require"
 )
 
 // Use existing resource group
@@ -28,6 +35,7 @@ var validRegions = []string{
 
 // Ensure every example directory has a corresponding test
 const basicExampleDir = "examples/basic"
+const advancedExampleDir = "examples/advanced"
 
 func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptions {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
@@ -62,4 +70,45 @@ func TestRunUpgradeExample(t *testing.T) {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
+}
+
+func setupTerraform(t *testing.T, prefix, realTerraformDir string) *terraform.Options {
+	tempTerraformDir, err := files.CopyTerraformFolderToTemp(realTerraformDir, prefix)
+	require.NoError(t, err, "Failed to create temporary Terraform folder")
+	region := "us-east"
+
+	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir: tempTerraformDir,
+		Vars: map[string]interface{}{
+			"prefix":         prefix,
+			"region":         region,
+			"resource_group": resourceGroup,
+		},
+		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
+		// This is the same as setting the -upgrade=true flag with terraform.
+		Upgrade: true,
+	})
+
+	terraform.WorkspaceSelectOrNew(t, existingTerraformOptions, prefix)
+	_, err = terraform.InitAndApplyE(t, existingTerraformOptions)
+	require.NoError(t, err, "Init and Apply of temp existing resource failed")
+
+	return existingTerraformOptions
+}
+func TestRunAdvancedExample(t *testing.T) {
+	t.Parallel()
+
+	prefix := fmt.Sprintf("brs-%s", strings.ToLower(random.UniqueId()))
+	existingTerraformOptions := setupTerraform(t, prefix, "./resources")
+
+	options := setupOptions(t, "brs-adv", advancedExampleDir)
+	options.TerraformVars = map[string]interface{}{
+		"prefix":           prefix,
+		"brs_instance_crn": terraform.Output(t, existingTerraformOptions, "brs_instance_crn"),
+		"resource_group":   resourceGroup,
+	}
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
 }
