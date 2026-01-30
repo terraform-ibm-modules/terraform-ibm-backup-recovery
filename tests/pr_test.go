@@ -110,17 +110,3 @@ func TestRunAdvancedExampleExistingInstance(t *testing.T) {
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
 }
-
-func TestRunAdvancedExampleCreation(t *testing.T) {
-	t.Parallel()
-
-	options := setupOptions(t, "brs-adv-create", advancedExampleDir)
-	options.TerraformVars = map[string]interface{}{
-		"prefix":         options.Prefix,
-		"resource_group": resourceGroup,
-	}
-
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-}

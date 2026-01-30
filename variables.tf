@@ -18,6 +18,11 @@ variable "brs_instance_crn" {
     condition     = var.brs_instance_crn == null || can(regex("^crn:v1:bluemix:public:backup-recovery:.*:a/[a-f0-9]{32}:.*:instance:.*$", var.brs_instance_crn))
     error_message = "The brs_instance_crn must be a valid IBM Cloud CRN or null."
   }
+
+  validation {
+    condition     = var.brs_instance_crn == null || var.region == element(split(":", var.brs_instance_crn), 5)
+    error_message = "The provided 'region' does not match the region derived from 'brs_instance_crn'. Please ensure they match."
+  }
 }
 
 variable "instance_name" {

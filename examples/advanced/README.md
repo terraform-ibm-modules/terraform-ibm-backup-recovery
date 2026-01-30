@@ -7,7 +7,7 @@
 
 An end-to-end advanced example that will demonstrate the following:
 - Using an existing resource group (or creating a new one if not provided).
-- Using an existing Backup and Recovery instance (by passing `brs_instance_crn`).
+- Using an existing Backup and Recovery instance (by passing `brs_instance_crn`) or creating a new one if not provided.
 - Creating a new data source connection in that existing instance.
 
 <!-- BEGIN SCHEMATICS DEPLOY TIP HOOK -->
