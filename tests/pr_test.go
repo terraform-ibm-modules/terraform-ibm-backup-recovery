@@ -98,7 +98,7 @@ func TestRunAdvancedExampleExistingInstance(t *testing.T) {
 	t.Parallel()
 
 	prefix := fmt.Sprintf("brs-%s", strings.ToLower(random.UniqueId()))
-	options := setupOptions(t, "brs-adv", advancedExampleDir)
+	options := setupOptions(t, "brs-adv-import", advancedExampleDir)
 	existingTerraformOptions := setupTerraform(t, prefix, "./resources", options.Region)
 	options.TerraformVars = map[string]interface{}{
 		"prefix":           prefix,
