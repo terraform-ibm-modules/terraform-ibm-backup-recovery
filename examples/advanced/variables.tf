@@ -25,5 +25,5 @@ variable "region" {
 variable "brs_instance_crn" {
   type        = string
   description = "The CRN of the existing Backup & Recovery instance."
-  nullable    = false
+  default     = null
 }

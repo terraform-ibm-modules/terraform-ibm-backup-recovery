@@ -94,7 +94,7 @@ func setupTerraform(t *testing.T, prefix, realTerraformDir, region string) *terr
 
 	return existingTerraformOptions
 }
-func TestRunAdvancedExample(t *testing.T) {
+func TestRunAdvancedExampleExistingInstance(t *testing.T) {
 	t.Parallel()
 
 	prefix := fmt.Sprintf("brs-%s", strings.ToLower(random.UniqueId()))
@@ -104,6 +104,20 @@ func TestRunAdvancedExample(t *testing.T) {
 		"prefix":           prefix,
 		"brs_instance_crn": terraform.Output(t, existingTerraformOptions, "brs_instance_crn"),
 		"resource_group":   resourceGroup,
+	}
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
+
+func TestRunAdvancedExampleCreation(t *testing.T) {
+	t.Parallel()
+
+	options := setupOptions(t, "brs-adv", advancedExampleDir)
+	options.TerraformVars = map[string]interface{}{
+		"prefix":         options.Prefix,
+		"resource_group": resourceGroup,
 	}
 
 	output, err := options.RunTestConsistency()
