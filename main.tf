@@ -36,11 +36,10 @@ resource "terraform_data" "delete_policies" {
     url           = local.backup_recovery_instance_public_url
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
-    api_key       = sensitive(var.ibmcloud_api_key)
   }
   # api key in triggers_replace to avoid it to be printed out in clear text in terraform_data output
   triggers_replace = {
-    api_key = sensitive(var.ibmcloud_api_key)
+    api_key = var.ibmcloud_api_key
   }
   provisioner "local-exec" {
     when        = destroy
@@ -48,7 +47,7 @@ resource "terraform_data" "delete_policies" {
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      API_KEY = self.input.api_key
+      API_KEY = self.triggers_replace.api_key
     }
   }
 }
