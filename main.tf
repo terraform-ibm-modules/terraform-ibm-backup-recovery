@@ -18,10 +18,6 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   location          = local.brs_instance_region
   resource_group_id = var.resource_group_id
   tags              = var.tags
-  # Support for KMS encryption has not yet been released.
-  parameters_json = var.kms_key_crn != null ? jsonencode({
-    "kms-root-key-crn" = var.kms_key_crn
-  }) : null
 }
 
 # When an instance is created, it comes with a few default policies. If these policies are not deleted before
