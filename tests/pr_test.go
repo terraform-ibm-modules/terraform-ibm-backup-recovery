@@ -72,10 +72,9 @@ func TestRunUpgradeExample(t *testing.T) {
 	}
 }
 
-func setupTerraform(t *testing.T, prefix, realTerraformDir string) *terraform.Options {
+func setupTerraform(t *testing.T, prefix, realTerraformDir, region string) *terraform.Options {
 	tempTerraformDir, err := files.CopyTerraformFolderToTemp(realTerraformDir, prefix)
 	require.NoError(t, err, "Failed to create temporary Terraform folder")
-	region := "us-east"
 
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir,
@@ -99,9 +98,8 @@ func TestRunAdvancedExample(t *testing.T) {
 	t.Parallel()
 
 	prefix := fmt.Sprintf("brs-%s", strings.ToLower(random.UniqueId()))
-	existingTerraformOptions := setupTerraform(t, prefix, "./resources")
-
 	options := setupOptions(t, "brs-adv", advancedExampleDir)
+	existingTerraformOptions := setupTerraform(t, prefix, "./resources", options.Region)
 	options.TerraformVars = map[string]interface{}{
 		"prefix":           prefix,
 		"brs_instance_crn": terraform.Output(t, existingTerraformOptions, "brs_instance_crn"),

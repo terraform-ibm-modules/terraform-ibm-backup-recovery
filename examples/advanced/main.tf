@@ -22,4 +22,5 @@ module "brs" {
   resource_group_id = module.resource_group.resource_group_id
   brs_instance_crn  = var.brs_instance_crn
   connection_name   = "${var.prefix}-connection"
+  region            = var.region
 }
