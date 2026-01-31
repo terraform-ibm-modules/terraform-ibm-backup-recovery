@@ -1,4 +1,3 @@
-
 # IBM Backup and Recovery Service (BRS) Module
 
 [![Graduated (Supported)](https://img.shields.io/badge/Status-Graduated%20(Supported)-brightgreen)](https://terraform-ibm-modules.github.io/documentation/#/badge-status)
@@ -16,6 +15,7 @@ Use this module to automate BRS setup in IBM Cloud with Terraform.
 * [terraform-ibm-backup-recovery](#terraform-ibm-backup-recovery)
 * [Examples](./examples)
 :information_source: Ctrl/Cmd+Click or right-click on the Schematics deploy button to open in a new tab
+    * <a href="./examples/advanced">Advanced example</a> <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=backup-recovery-advanced-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples/advanced"><img src="https://img.shields.io/badge/Deploy%20with IBM%20Cloud%20Schematics-0f62fe?logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
     * <a href="./examples/basic">Basic example</a> <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=backup-recovery-basic-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples/basic"><img src="https://img.shields.io/badge/Deploy%20with IBM%20Cloud%20Schematics-0f62fe?logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
 * [Contributing](#contributing)
 <!-- END OVERVIEW HOOK -->
@@ -76,7 +76,9 @@ You need the following permissions to run this module:
 
 ### Modules
 
-No modules.
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_crn_parser"></a> [crn\_parser](#module\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.4.1 |
 
 ### Resources
 
@@ -94,11 +96,11 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_brs_instance_crn"></a> [brs\_instance\_crn](#input\_brs\_instance\_crn) | The CRN of the existing Backup & Recovery Service instance. If not provided, a new instance will be created. | `string` | `null` | no |
 | <a name="input_connection_name"></a> [connection\_name](#input\_connection\_name) | Name of the data source connection. | `string` | `"brs-connection"` | no |
 | <a name="input_create_new_connection"></a> [create\_new\_connection](#input\_create\_new\_connection) | Set to true to create a new data source connection, false to use existing. | `bool` | `true` | no |
-| <a name="input_create_new_instance"></a> [create\_new\_instance](#input\_create\_new\_instance) | Set to true to create a new BRS instance, false to use existing one. | `bool` | `true` | no |
 | <a name="input_endpoint_type"></a> [endpoint\_type](#input\_endpoint\_type) | The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection. Allowed values are 'public' or 'private'. | `string` | `"public"` | no |
-| <a name="input_ibmcloud_api_key"></a> [ibmcloud\_api\_key](#input\_ibmcloud\_api\_key) | The IBM Cloud platform API key needed to deploy IAM enabled resources. | `string` | n/a | yes |
+| <a name="input_ibmcloud_api_key"></a> [ibmcloud\_api\_key](#input\_ibmcloud\_api\_key) | The IBM Cloud platform API key needed to deploy IAM enabled resources. | `string` | `null` | no |
 | <a name="input_instance_name"></a> [instance\_name](#input\_instance\_name) | Name of the Backup & Recovery Service instance. | `string` | `"brs-instance"` | no |
 | <a name="input_plan"></a> [plan](#input\_plan) | The plan type for the Backup and Recovery service. Currently, only the premium plan is available. | `string` | `"premium"` | no |
 | <a name="input_region"></a> [region](#input\_region) | IBM Cloud region where the instance is located or will be created. | `string` | `"us-east"` | no |

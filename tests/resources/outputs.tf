@@ -6,12 +6,14 @@ output "brs_instance" {
   description = "Details of the BRS instance."
   value       = module.brs.brs_instance
 }
-
+output "brs_instance_crn" {
+  description = "CRN of the BRS instance."
+  value       = module.brs.brs_instance_crn
+}
 output "tenant_id" {
   description = "BRS tenant ID (with trailing slash)."
   value       = module.brs.tenant_id
 }
-
 output "brs_connection_name" {
   description = "Name of the data source connection."
   value       = module.brs.connection_name
