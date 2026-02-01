@@ -14,13 +14,40 @@ module "resource_group" {
 # Backup & Recovery Service (BRS) Module
 ########################################################################################################################
 
-module "brs" {
-  source            = "terraform-ibm-modules/backup-recovery/ibm"
-  version           = "v1.3.0"
+resource "ibm_resource_instance" "backup_recovery_instance" {
+  name              = "${var.prefix}-instance"
+  service           = "backup-recovery"
+  plan              = "premium"
+  location          = var.region
   resource_group_id = module.resource_group.resource_group_id
-  instance_name     = "${var.prefix}-instance"
-  connection_name   = "${var.prefix}-instance"
-  region            = var.region
-  ibmcloud_api_key  = var.ibmcloud_api_key
   tags              = var.resource_tags
 }
+
+resource "terraform_data" "policy_cleanup" {
+  count = 1
+
+  input = {
+    url           = ibm_resource_instance.backup_recovery_instance.extensions["endpoints.public"]
+    tenant        = "${ibm_resource_instance.backup_recovery_instance.extensions["tenant-id"]}/"
+    endpoint_type = "public"
+    api_key       = sensitive(var.ibmcloud_api_key)
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      ibm_resource_instance.backup_recovery_instance
+    ]
+  }
+
+  provisioner "local-exec" {
+    when        = destroy
+    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type}"
+    interpreter = ["/bin/bash", "-c"]
+
+    environment = {
+      API_KEY = self.input.api_key
+    }
+  }
+}
+
+

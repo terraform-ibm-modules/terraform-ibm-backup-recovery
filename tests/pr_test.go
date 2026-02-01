@@ -7,6 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"os/exec"
+	"path/filepath"
+
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -17,7 +20,7 @@ import (
 )
 
 // Use existing resource group
-const resourceGroup = "geretain-test-resources"
+const resourceGroup = "BRT-General-testing"
 
 // Current supported regions
 var validRegions = []string{
@@ -52,13 +55,26 @@ func setupOptions(t *testing.T, prefix string, dir string, terraformVars map[str
 func setupTerraform(t *testing.T, prefix, realTerraformDir string) *terraform.Options {
 	tempTerraformDir, err := files.CopyTerraformFolderToTemp(realTerraformDir, prefix)
 	require.NoError(t, err, "Failed to create temporary Terraform folder")
+
+	// Copy the scripts folder to the temporary Terraform directory so the test can find the delete_policies.sh script
+	// We assume the test is running from the 'tests' directory, so the scripts are in '../scripts'
+	scriptsSrc, _ := filepath.Abs("../scripts")
+	scriptsDest := filepath.Join(tempTerraformDir, "scripts")
+
+	// Create the destination directory parent if needed, though tempTerraformDir exists.
+	// We use cp -r to copy the folder.
+	cmd := exec.Command("cp", "-r", scriptsSrc, scriptsDest)
+	err = cmd.Run()
+	require.NoError(t, err, "Failed to copy scripts folder to temp dir")
+
 	region := validRegions[common.CryptoIntn(len(validRegions))]
 
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir,
 		Vars: map[string]interface{}{
-			"prefix": prefix,
-			"region": region,
+			"prefix":         prefix,
+			"region":         region,
+			"resource_group": resourceGroup,
 		},
 		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
 		// This is the same as setting the -upgrade=true flag with terraform.
