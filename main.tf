@@ -36,30 +36,21 @@ resource "terraform_data" "delete_policies" {
     url           = local.backup_recovery_instance_public_url
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
-    api_key       = sensitive(var.ibmcloud_api_key)
   }
-
-  lifecycle {
-    replace_triggered_by = [
-      ibm_resource_instance.backup_recovery_instance[0]
-    ]
+  # api key in triggers_replace to avoid it to be printed out in clear text in terraform_data output
+  triggers_replace = {
+    api_key = var.ibmcloud_api_key
   }
-
   provisioner "local-exec" {
     when        = destroy
     command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type}"
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      # Use try() to handle upgrade scenarios where the state might be from an older version
-      # 1. self.input.api_key: New state structure
-      # 2. self.triggers_replace.api_key: Old state structure (backward compatibility)
-      API_KEY = try(self.input.api_key, self.triggers_replace.api_key)
+      API_KEY = self.triggers_replace.api_key
     }
   }
 }
-
-
 
 # Data source to retrieve the existing instance details if create_new_instance is false.
 # This is used when a BRS instance CRN is provided.

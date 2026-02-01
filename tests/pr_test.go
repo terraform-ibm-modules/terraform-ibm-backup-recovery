@@ -121,7 +121,7 @@ func TestRunExistingInstance(t *testing.T) {
 	t.Parallel()
 
 	// 1. Provision Basic Example
-	basicOptions := setupTerraform(t, "brs-exist", "tests/resources")
+	basicOptions := setupTerraform(t, "brs-exist", "resources")
 	defer cleanupTerraform(t, basicOptions, "brs-exist")
 
 	// 2. Provision Advanced Example using existing CRN
