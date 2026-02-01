@@ -30,24 +30,42 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
 # When an instance is created, it comes with a few default policies. If these policies are not deleted before
 # attempting to delete the instance, the deletion will fail. This is the expected default behavior — even when
 # an instance is created through the UI, it cannot be deleted until its associated policies are removed first.
+# Legacy resource handling API key trigger to match existing state and avoid destructive replacement during upgrade.
+# The provisioner is removed effectively disabling the cleanup logic in this resource, making its replacement harmless.
 resource "terraform_data" "delete_policies" {
   count = local.create_new_instance ? 1 : 0
+
+  # Replicate the old triggers_replace structure to avoid replacement during upgrade
+  triggers_replace = {
+    api_key = sensitive(var.ibmcloud_api_key)
+  }
+}
+
+# New resource handling the actual cleanup policy.
+# This avoids using API key in triggers_replace, ensuring rotation doesn't trigger cleanup.
+resource "terraform_data" "policy_cleanup" {
+  count = local.create_new_instance ? 1 : 0
+
   input = {
     url           = local.backup_recovery_instance_public_url
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
+    api_key       = sensitive(var.ibmcloud_api_key)
   }
-  # api key in triggers_replace to avoid it to be printed out in clear text in terraform_data output
-  triggers_replace = {
-    api_key = var.ibmcloud_api_key
+
+  lifecycle {
+    replace_triggered_by = [
+      ibm_resource_instance.backup_recovery_instance[0]
+    ]
   }
+
   provisioner "local-exec" {
     when        = destroy
     command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type}"
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      API_KEY = self.triggers_replace.api_key
+      API_KEY = self.input.api_key
     }
   }
 }

@@ -127,6 +127,7 @@ func TestRunExistingInstance(t *testing.T) {
 	// 2. Provision Advanced Example using existing CRN
 	advancedVars := map[string]interface{}{
 		"brs_instance_crn": terraform.Output(t, basicOptions, "brs_instance_crn"),
+		"region":           basicOptions.Vars["region"],
 	}
 
 	advancedOptions := setupOptions(t, "brs-exist-adv", advancedExampleDir, advancedVars)
