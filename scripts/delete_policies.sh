@@ -46,7 +46,7 @@ while ((ATTEMPT < MAX_ATTEMPTS)); do
   # Get fresh list of policy IDs with HTTP status check
   # Use a temp file for response body to separate body from status code
   RESP_FILE=$(mktemp)
-  
+
   # Force --http1.1 to avoid potential H2 header handling issues
   # Add Content-Type and Accept to ensure strict middleware accepts it
   HTTP_CODE=$(curl --http1.1 -s -o "$RESP_FILE" -w "%{http_code}" \
@@ -55,7 +55,7 @@ while ((ATTEMPT < MAX_ATTEMPTS)); do
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
     "https://${URL}/v2/data-protect/policies")
-  
+
   BODY=$(cat "$RESP_FILE")
   rm "$RESP_FILE"
 
@@ -65,7 +65,7 @@ while ((ATTEMPT < MAX_ATTEMPTS)); do
      # If we can't list, we can't clean up. Fail immediately to let Terraform know.
      exit 1
   fi
-  
+
   POLICY_IDS=$(echo "$BODY" | jq -r '.policies // [] | .[].id // empty')
 
   # If nothing left → we are done

@@ -49,5 +49,3 @@ resource "terraform_data" "policy_cleanup" {
     }
   }
 }
-
-
