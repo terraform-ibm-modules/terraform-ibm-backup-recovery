@@ -39,6 +39,14 @@ resource "terraform_data" "delete_policies" {
   triggers_replace = {
     api_key = sensitive(var.ibmcloud_api_key)
   }
+
+  # Replicate old input structure to avoid "update" in plan during upgrade
+  input = {
+    url           = local.backup_recovery_instance_public_url
+    tenant        = local.tenant_id
+    endpoint_type = var.endpoint_type
+    api_key       = sensitive(var.ibmcloud_api_key)
+  }
 }
 
 # New resource handling the actual cleanup policy.

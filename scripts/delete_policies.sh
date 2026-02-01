@@ -82,7 +82,8 @@ done
 
 # Final check + friendly message
 if ((ATTEMPT >= MAX_ATTEMPTS)); then
-  echo "WARNING: Reached maximum attempts. Some policies may still exist." >&2
+  echo "ERROR: Reached maximum attempts. Some policies may still exist." >&2
+  exit 1
 else
   echo "All policies successfully cleaned up."
 fi
