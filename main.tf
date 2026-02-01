@@ -53,7 +53,7 @@ resource "terraform_data" "delete_policies" {
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      API_KEY = try(self.input.api_key, var.ibmcloud_api_key)
+      API_KEY = try(self.input.api_key, self.triggers_replace.api_key)
     }
   }
 }
