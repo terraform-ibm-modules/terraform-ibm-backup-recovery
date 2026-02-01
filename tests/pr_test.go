@@ -20,7 +20,7 @@ import (
 )
 
 // Use existing resource group
-const resourceGroup = "BRT-General-testing"
+const resourceGroup = "geretain-test-resources"
 
 // Current supported regions
 var validRegions = []string{
