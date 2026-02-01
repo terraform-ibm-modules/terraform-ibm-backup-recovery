@@ -47,6 +47,10 @@ resource "terraform_data" "delete_policies" {
     endpoint_type = var.endpoint_type
     api_key       = sensitive(var.ibmcloud_api_key)
   }
+
+  lifecycle {
+    ignore_changes = [input, triggers_replace]
+  }
 }
 
 # New resource handling the actual cleanup policy.
