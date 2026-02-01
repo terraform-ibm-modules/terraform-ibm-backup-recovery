@@ -24,8 +24,6 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
 }
 
 resource "terraform_data" "policy_cleanup" {
-  count = 1
-
   input = {
     url           = ibm_resource_instance.backup_recovery_instance.extensions["endpoints.public"]
     tenant        = "${ibm_resource_instance.backup_recovery_instance.extensions["tenant-id"]}/"

@@ -1,13 +1,14 @@
 
 locals {
   # Determine whether to create new resources or use existing ones
-  create_new_instance                 = var.brs_instance_crn == null || var.brs_instance_crn == ""
-  brs_instance_guid                   = local.create_new_instance ? null : module.crn_parser[0].service_instance
-  brs_instance_region                 = local.create_new_instance ? var.region : module.crn_parser[0].region
-  backup_recovery_instance            = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
-  backup_recovery_connection          = var.connection_name == null ? null : (var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0])
-  tenant_id                           = "${local.backup_recovery_instance.extensions.tenant-id}/"
-  backup_recovery_instance_public_url = local.backup_recovery_instance.extensions["endpoints.public"]
+  create_new_instance                  = var.brs_instance_crn == null || var.brs_instance_crn == ""
+  brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
+  brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
+  backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
+  backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0])
+  tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
+  backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
+  backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
 }
 
 module "crn_parser" {
@@ -30,36 +31,11 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
 # When an instance is created, it comes with a few default policies. If these policies are not deleted before
 # attempting to delete the instance, the deletion will fail. This is the expected default behavior — even when
 # an instance is created through the UI, it cannot be deleted until its associated policies are removed first.
-# Legacy resource handling API key trigger to match existing state and avoid destructive replacement during upgrade.
-# The provisioner is removed effectively disabling the cleanup logic in this resource, making its replacement harmless.
 resource "terraform_data" "delete_policies" {
   count = local.create_new_instance ? 1 : 0
 
-  # Replicate the old triggers_replace structure to avoid replacement during upgrade
-  triggers_replace = {
-    api_key = sensitive(var.ibmcloud_api_key)
-  }
-
-  # Replicate old input structure to avoid "update" in plan during upgrade
   input = {
-    url           = local.backup_recovery_instance_public_url
-    tenant        = local.tenant_id
-    endpoint_type = var.endpoint_type
-    api_key       = sensitive(var.ibmcloud_api_key)
-  }
-
-  lifecycle {
-    ignore_changes = [input, triggers_replace]
-  }
-}
-
-# New resource handling the actual cleanup policy.
-# This avoids using API key in triggers_replace, ensuring rotation doesn't trigger cleanup.
-resource "terraform_data" "policy_cleanup" {
-  count = local.create_new_instance ? 1 : 0
-
-  input = {
-    url           = local.backup_recovery_instance_public_url
+    url           = var.endpoint_type == "public" ? local.backup_recovery_instance_public_url : local.backup_recovery_instance_private_url
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
     api_key       = sensitive(var.ibmcloud_api_key)
