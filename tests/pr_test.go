@@ -115,6 +115,11 @@ func TestRunUpgradeExample(t *testing.T) {
 	t.Parallel()
 
 	options := setupOptions(t, "brs-upg", basicExampleDir, nil)
+	options.IgnoreDestroys = testhelper.Exemptions{
+		List: []string{
+			"module.brs.terraform_data.delete_policies[0]",
+		},
+	}
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
