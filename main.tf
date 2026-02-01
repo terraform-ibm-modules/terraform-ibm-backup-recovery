@@ -51,7 +51,11 @@ resource "terraform_data" "delete_policies" {
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      API_KEY = self.input.api_key
+      # Use try() to handle upgrade scenarios where the state might be from an older version
+      # 1. self.input.api_key: New state structure
+      # 2. self.triggers_replace.api_key: Old state structure (backward compatibility)
+      # 3. var.ibmcloud_api_key: Fallback to current variable
+      API_KEY = try(self.input.api_key, self.triggers_replace.api_key, var.ibmcloud_api_key)
     }
   }
 }
