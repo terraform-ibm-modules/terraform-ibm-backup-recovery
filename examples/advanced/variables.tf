@@ -13,7 +13,7 @@ variable "resource_group" {
 variable "prefix" {
   type        = string
   description = "A unique prefix to name all resources created by this example. Must be lowercase, no spaces, and 3–12 characters."
-  default     = "brs-basic"
+  default     = "existing-brs"
 }
 
 variable "region" {
