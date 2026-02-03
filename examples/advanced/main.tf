@@ -25,5 +25,5 @@ module "brs" {
   instance_name     = "${var.prefix}-instance"
   region            = var.region
   ibmcloud_api_key  = var.ibmcloud_api_key
-  tags              = var.resource_tags
+  resource_tags     = var.resource_tags
 }

@@ -25,7 +25,7 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   plan              = var.plan
   location          = local.brs_instance_region
   resource_group_id = var.resource_group_id
-  tags              = var.tags
+  tags              = var.resource_tags
 }
 
 # When an instance is created, it comes with a few default policies. If these policies are not deleted before

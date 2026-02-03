@@ -105,7 +105,7 @@ You need the following permissions to run this module:
 | <a name="input_plan"></a> [plan](#input\_plan) | The plan type for the Backup and Recovery service. Currently, only the premium plan is available. | `string` | `"premium"` | no |
 | <a name="input_region"></a> [region](#input\_region) | IBM Cloud region where the instance is located or will be created. | `string` | `"us-east"` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | Resource group ID where the BRS instance exists or will be created. | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | Metadata labels describing this backup and recovery service instance, i.e. test | `list(string)` | `[]` | no |
+| <a name="input_resource_tags"></a> [resource\_tags](#input\_resource\_tags) | Add user resource tags to the Backup Recovery instance to organize, track, and manage costs. [Learn more](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#tag-types). | `list(string)` | `[]` | no |
 
 ### Outputs
 
