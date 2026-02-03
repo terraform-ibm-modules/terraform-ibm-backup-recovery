@@ -54,7 +54,7 @@ resource "terraform_data" "delete_policies" {
   }
   provisioner "local-exec" {
     when        = destroy
-    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${self.input.binaries_path}"
+    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${try(self.input.binaries_path, "/tmp")}"
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
