@@ -46,7 +46,6 @@ resource "terraform_data" "delete_policies" {
     url           = local.backup_recovery_instance_public_url
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
-    binaries_path = local.binaries_path
   }
   # api key in triggers_replace to avoid it to be printed out in clear text in terraform_data output
   triggers_replace = {
@@ -54,7 +53,7 @@ resource "terraform_data" "delete_policies" {
   }
   provisioner "local-exec" {
     when        = destroy
-    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${try(self.input.binaries_path, "/tmp")}"
+    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} /tmp"
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
