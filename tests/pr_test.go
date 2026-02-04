@@ -38,7 +38,7 @@ var validRegions = []string{
 
 // Ensure every example directory has a corresponding test
 const basicExampleDir = "examples/basic"
-const advancedExampleDir = "examples/advanced"
+const existingBrsExampleDir = "examples/existing-brs"
 
 func setupOptions(t *testing.T, prefix string, dir string, terraformVars map[string]interface{}) *testhelper.TestOptions {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
@@ -110,7 +110,7 @@ func TestRunBasicExample(t *testing.T) {
 	assert.NotNil(t, output, "Expected some output")
 }
 
-// Upgrade test (using advanced example)
+// Upgrade test (using basic example)
 func TestRunUpgradeExample(t *testing.T) {
 	t.Parallel()
 
@@ -130,10 +130,10 @@ func TestRunUpgradeExample(t *testing.T) {
 	}
 }
 
-func TestRunAdvancedExample(t *testing.T) {
+func TestRunExistingBrsExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-adv", advancedExampleDir, nil)
+	options := setupOptions(t, "brs-existing", existingBrsExampleDir, nil)
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -147,17 +147,17 @@ func TestRunExistingInstance(t *testing.T) {
 	basicOptions := setupTerraform(t, "brs-exist", "resources")
 	defer cleanupTerraform(t, basicOptions, "brs-exist")
 
-	// 2. Provision Advanced Example using existing CRN
-	advancedVars := map[string]interface{}{
+	// 2. Provision existing-brs Example using existing CRN
+	existingBrsVars := map[string]interface{}{
 		"existing_brs_instance_crn": terraform.Output(t, basicOptions, "brs_instance_crn"),
 		"region":                    basicOptions.Vars["region"],
 	}
 
-	advancedOptions := setupOptions(t, "brs-exist-adv", advancedExampleDir, advancedVars)
+	existingBrsOptions := setupOptions(t, "brs-exist-adv", existingBrsExampleDir, existingBrsVars)
 
-	// We can use the standard consistency test here, which will Apply and Destroy the advanced example.
+	// We can use the standard consistency test here, which will Apply and Destroy the existing-brs example.
 	// The basic example will be destroyed by the defer above.
-	outputAdv, errAdv := advancedOptions.RunTestConsistency()
-	assert.Nil(t, errAdv, "Advanced example with existing instance should succeed")
-	assert.NotNil(t, outputAdv, "Expected output from advanced example")
+	outputAdv, errAdv := existingBrsOptions.RunTestConsistency()
+	assert.Nil(t, errAdv, "existing-brs example with existing instance should succeed")
+	assert.NotNil(t, outputAdv, "Expected output from existing-brs example")
 }
