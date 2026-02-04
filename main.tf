@@ -1,7 +1,7 @@
 
 locals {
   # Determine whether to create new resources or use existing ones
-  create_new_instance                  = var.brs_instance_crn == null || var.brs_instance_crn == ""
+  create_new_instance                  = var.existing_brs_instance_crn == null || var.existing_brs_instance_crn == ""
   brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
   brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
   backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
@@ -15,7 +15,7 @@ module "crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
   version = "1.4.1"
   count   = local.create_new_instance ? 0 : 1
-  crn     = var.brs_instance_crn
+  crn     = var.existing_brs_instance_crn
 }
 
 resource "ibm_resource_instance" "backup_recovery_instance" {
@@ -86,11 +86,6 @@ resource "ibm_backup_recovery_data_source_connection" "connection" {
 
 resource "time_rotating" "token_rotation" {
   rotation_days = 1
-}
-
-moved {
-  from = ibm_backup_recovery_connection_registration_token.registration_token
-  to   = ibm_backup_recovery_connection_registration_token.registration_token[0]
 }
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
   count           = var.connection_name != null ? 1 : 0

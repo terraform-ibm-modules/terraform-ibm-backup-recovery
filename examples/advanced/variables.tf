@@ -22,7 +22,7 @@ variable "region" {
   default     = "us-east"
   nullable    = false
 }
-variable "brs_instance_crn" {
+variable "existing_brs_instance_crn" {
   type        = string
   description = "The CRN of the existing Backup & Recovery instance. If not passed, a new instance is created."
   default     = null

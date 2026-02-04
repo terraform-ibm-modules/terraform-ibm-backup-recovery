@@ -96,10 +96,10 @@ You need the following permissions to run this module:
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_brs_instance_crn"></a> [brs\_instance\_crn](#input\_brs\_instance\_crn) | The CRN of the existing Backup & Recovery Service instance. If not provided, a new instance will be created. | `string` | `null` | no |
 | <a name="input_connection_name"></a> [connection\_name](#input\_connection\_name) | Name of the data source connection. | `string` | `"brs-connection"` | no |
 | <a name="input_create_new_connection"></a> [create\_new\_connection](#input\_create\_new\_connection) | Set to true to create a new data source connection, false to use existing. | `bool` | `true` | no |
 | <a name="input_endpoint_type"></a> [endpoint\_type](#input\_endpoint\_type) | The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection. Allowed values are 'public' or 'private'. | `string` | `"public"` | no |
+| <a name="input_existing_brs_instance_crn"></a> [existing\_brs\_instance\_crn](#input\_existing\_brs\_instance\_crn) | The CRN of the existing Backup & Recovery Service instance. If not provided, a new instance will be created. | `string` | `null` | no |
 | <a name="input_ibmcloud_api_key"></a> [ibmcloud\_api\_key](#input\_ibmcloud\_api\_key) | The IBM Cloud platform API key needed to deploy IAM enabled resources. | `string` | `null` | no |
 | <a name="input_instance_name"></a> [instance\_name](#input\_instance\_name) | Name of the Backup & Recovery Service instance. | `string` | `"brs-instance"` | no |
 | <a name="input_plan"></a> [plan](#input\_plan) | The plan type for the Backup and Recovery service. Currently, only the premium plan is available. | `string` | `"premium"` | no |
