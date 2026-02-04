@@ -8,7 +8,7 @@
 An end-to-end advanced example that will demonstrate the following:
 - Using an existing resource group (or creating a new one if not provided).
 - Using an existing Backup and Recovery instance (by passing `brs_instance_crn`) or creating a new one if not provided.
-- Creating a new data source connection in that existing instance.
+- Creating a new data source connection in that Backup and Recovery instance.
 
 <!-- BEGIN SCHEMATICS DEPLOY TIP HOOK -->
 :information_source: Ctrl/Cmd+Click or right-click on the Schematics deploy button to open in a new tab
