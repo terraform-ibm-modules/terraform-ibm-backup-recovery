@@ -143,11 +143,11 @@ func TestRunExistingBrsExample(t *testing.T) {
 func TestRunExistingInstance(t *testing.T) {
 	t.Parallel()
 
-	// 1. Provision Basic Example
+	// Provision the resources needed for the existing-brs example
 	basicOptions := setupTerraform(t, "brs-exist", "resources")
 	defer cleanupTerraform(t, basicOptions, "brs-exist")
 
-	// 2. Provision existing-brs Example using existing CRN
+	// Provision existing-brs Example using existing brs instance CRN created by the above terraform code.
 	existingBrsVars := map[string]interface{}{
 		"existing_brs_instance_crn": terraform.Output(t, basicOptions, "brs_instance_crn"),
 		"region":                    basicOptions.Vars["region"],
@@ -155,8 +155,6 @@ func TestRunExistingInstance(t *testing.T) {
 
 	existingBrsOptions := setupOptions(t, "brs-exist-adv", existingBrsExampleDir, existingBrsVars)
 
-	// We can use the standard consistency test here, which will Apply and Destroy the existing-brs example.
-	// The basic example will be destroyed by the defer above.
 	outputAdv, errAdv := existingBrsOptions.RunTestConsistency()
 	assert.Nil(t, errAdv, "existing-brs example with existing instance should succeed")
 	assert.NotNil(t, outputAdv, "Expected output from existing-brs example")

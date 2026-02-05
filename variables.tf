@@ -6,7 +6,6 @@ variable "ibmcloud_api_key" {
   type        = string
   description = "The IBM Cloud platform API key needed to deploy IAM enabled resources."
   sensitive   = true
-  default     = null
 }
 
 variable "existing_brs_instance_crn" {
