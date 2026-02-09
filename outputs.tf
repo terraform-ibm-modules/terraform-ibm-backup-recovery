@@ -1,6 +1,6 @@
 output "registration_token" {
   description = "Registration token used to enroll data source connectors with the BRS connection. Expires in 24 hours. Must be kept secure."
-  value       = ibm_backup_recovery_connection_registration_token.registration_token.registration_token
+  value       = var.connection_name == null ? null : ibm_backup_recovery_connection_registration_token.registration_token[0].registration_token
   sensitive   = true
 }
 
@@ -11,7 +11,7 @@ output "tenant_id" {
 
 output "connection_id" {
   description = "Unique ID of the data source connection. Used to identify the connection in BRS for agent registration and management."
-  value       = local.backup_recovery_connection.connection_id
+  value       = local.backup_recovery_connection == null ? null : local.backup_recovery_connection.connection_id
 }
 
 output "brs_instance_guid" {
@@ -30,5 +30,5 @@ output "brs_instance" {
 }
 output "connection_name" {
   description = "Name of the data source connection."
-  value       = local.backup_recovery_connection.connection_name
+  value       = local.backup_recovery_connection == null ? null : local.backup_recovery_connection.connection_name
 }

@@ -2,9 +2,19 @@
 package test
 
 import (
+	"fmt"
+	"os"
+	"strings"
 	"testing"
 
+	"os/exec"
+	"path/filepath"
+
+	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 )
@@ -28,38 +38,124 @@ var validRegions = []string{
 
 // Ensure every example directory has a corresponding test
 const basicExampleDir = "examples/basic"
+const existingBrsExampleDir = "examples/existing-brs"
 
-func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptions {
+func setupOptions(t *testing.T, prefix string, dir string, terraformVars map[string]interface{}) *testhelper.TestOptions {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:       t,
 		TerraformDir:  dir,
 		Prefix:        prefix,
 		ResourceGroup: resourceGroup,
 		Region:        validRegions[common.CryptoIntn(len(validRegions))],
+		TerraformVars: terraformVars,
 	})
 	return options
+}
+
+func setupTerraform(t *testing.T, prefix, realTerraformDir string) *terraform.Options {
+	tempTerraformDir, err := files.CopyTerraformFolderToTemp(realTerraformDir, prefix)
+	require.NoError(t, err, "Failed to create temporary Terraform folder")
+
+	// Copy the scripts folder to the temporary Terraform directory so the test can find the delete_policies.sh script
+	// We assume the test is running from the 'tests' directory, so the scripts are in '../scripts'
+	scriptsSrc, _ := filepath.Abs("../scripts")
+	scriptsDest := filepath.Join(tempTerraformDir, "scripts")
+
+	// Create the destination directory parent if needed, though tempTerraformDir exists.
+	// We use cp -r to copy the folder.
+	cmd := exec.Command("cp", "-r", scriptsSrc, scriptsDest)
+	err = cmd.Run()
+	require.NoError(t, err, "Failed to copy scripts folder to temp dir")
+
+	region := validRegions[common.CryptoIntn(len(validRegions))]
+
+	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir: tempTerraformDir,
+		Vars: map[string]interface{}{
+			"prefix":         prefix,
+			"region":         region,
+			"resource_group": resourceGroup,
+		},
+		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
+		// This is the same as setting the -upgrade=true flag with terraform.
+		Upgrade: true,
+	})
+
+	terraform.WorkspaceSelectOrNew(t, existingTerraformOptions, prefix)
+	_, err = terraform.InitAndApplyE(t, existingTerraformOptions)
+	require.NoError(t, err, "Init and Apply of temp existing resource failed")
+
+	return existingTerraformOptions
+}
+
+func cleanupTerraform(t *testing.T, options *terraform.Options, prefix string) {
+	if t.Failed() && strings.ToLower(os.Getenv("DO_NOT_DESTROY_ON_FAILURE")) == "true" {
+		fmt.Println("Terratest failed. Debug the test and delete resources manually.")
+		return
+	}
+	logger.Log(t, "START: Destroy (existing resources)")
+	terraform.Destroy(t, options)
+	terraform.WorkspaceDelete(t, options, prefix)
+	logger.Log(t, "END: Destroy (existing resources)")
 }
 
 // Consistency test for the basic example
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-basic", basicExampleDir)
+	options := setupOptions(t, "brs-basic", basicExampleDir, nil)
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
 }
 
-// Upgrade test (using advanced example)
+// Upgrade test (using basic example)
 func TestRunUpgradeExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-upg", basicExampleDir)
+	options := setupOptions(t, "brs-upg", basicExampleDir, nil)
+	// Ignore destruction of the delete_policies resource as the input has changed (added api_key)
+	// which causes a recreation of this null resource. This is expected behavior during the upgrade.
+	options.IgnoreDestroys = testhelper.Exemptions{
+		List: []string{
+			"module.brs.terraform_data.delete_policies[0]",
+		},
+	}
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
+}
+
+func TestRunExistingBrsExample(t *testing.T) {
+	t.Parallel()
+
+	options := setupOptions(t, "brs-existing", existingBrsExampleDir, nil)
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
+
+func TestRunExistingInstance(t *testing.T) {
+	t.Parallel()
+
+	// Provision the resources needed for the existing-brs example
+	basicOptions := setupTerraform(t, "brs-exist", "resources")
+	defer cleanupTerraform(t, basicOptions, "brs-exist")
+
+	// Provision existing-brs Example using existing brs instance CRN created by the above terraform code.
+	existingBrsVars := map[string]interface{}{
+		"existing_brs_instance_crn": terraform.Output(t, basicOptions, "brs_instance_crn"),
+		"region":                    basicOptions.Vars["region"],
+	}
+
+	existingBrsOptions := setupOptions(t, "brs-exist-adv", existingBrsExampleDir, existingBrsVars)
+
+	outputAdv, errAdv := existingBrsOptions.RunTestConsistency()
+	assert.Nil(t, errAdv, "existing-brs example with existing instance should succeed")
+	assert.NotNil(t, outputAdv, "Expected output from existing-brs example")
 }
