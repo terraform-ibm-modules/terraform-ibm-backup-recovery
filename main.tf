@@ -1,26 +1,5 @@
 
 locals {
-  backup_recovery_instance            = var.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
-  backup_recovery_connection          = var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0]
-  tenant_id                           = "${local.backup_recovery_instance.extensions.tenant-id}/"
-  backup_recovery_instance_public_url = local.backup_recovery_instance.extensions["endpoints.public"]
-  binaries_path                       = "/tmp"
-}
-
-
-resource "terraform_data" "install_dependencies" {
-  depends_on = [
-    terraform_data.delete_policies
-  ]
-  count = (var.install_required_binaries && var.create_new_instance) ? 1 : 0
-  input = {
-    binaries_path = local.binaries_path
-  }
-  provisioner "local-exec" {
-    when        = destroy
-    command     = "${path.module}/scripts/install-binaries.sh ${self.input.binaries_path}"
-    interpreter = ["/bin/bash", "-c"]
-  }
   # Determine whether to create new resources or use existing ones
   create_new_instance                  = var.existing_brs_instance_crn == null || var.existing_brs_instance_crn == ""
   brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
@@ -30,6 +9,8 @@ resource "terraform_data" "install_dependencies" {
   tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
+  binaries_path                        = "/tmp"
+
 }
 
 module "crn_parser" {
@@ -37,6 +18,21 @@ module "crn_parser" {
   version = "1.4.1"
   count   = local.create_new_instance ? 0 : 1
   crn     = var.existing_brs_instance_crn
+}
+
+resource "terraform_data" "install_dependencies" {
+  depends_on = [
+    terraform_data.delete_policies
+  ]
+  count = (var.install_required_binaries && local.create_new_instance) ? 1 : 0
+  input = {
+    binaries_path = local.binaries_path
+  }
+  provisioner "local-exec" {
+    when        = destroy
+    command     = "${path.module}/scripts/install-binaries.sh ${self.input.binaries_path}"
+    interpreter = ["/bin/bash", "-c"]
+  }
 }
 
 resource "ibm_resource_instance" "backup_recovery_instance" {
@@ -59,8 +55,9 @@ resource "terraform_data" "delete_policies" {
     url           = var.endpoint_type == "public" ? local.backup_recovery_instance_public_url : local.backup_recovery_instance_private_url
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
-    binaries_path = local.binaries_path
     api_key       = sensitive(var.ibmcloud_api_key)
+    binaries_path = local.binaries_path
+
   }
 
   lifecycle {
