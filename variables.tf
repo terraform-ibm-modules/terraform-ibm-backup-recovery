@@ -8,10 +8,15 @@ variable "ibmcloud_api_key" {
   sensitive   = true
 }
 
-variable "create_new_instance" {
-  type        = bool
-  description = "Set to true to create a new BRS instance, false to use existing one."
-  default     = true
+variable "existing_brs_instance_crn" {
+  type        = string
+  description = "The CRN of the existing Backup & Recovery Service instance. If not provided, a new instance will be created."
+  default     = null
+
+  validation {
+    condition     = var.existing_brs_instance_crn == null || var.region == element(split(":", var.existing_brs_instance_crn), 5)
+    error_message = "The provided 'region' does not match the region derived from 'brs_instance_crn'. Please ensure they match."
+  }
 }
 
 variable "instance_name" {
@@ -31,10 +36,15 @@ variable "plan" {
   }
 }
 
-variable "tags" {
+variable "resource_tags" {
   type        = list(string)
-  description = "Metadata labels describing this backup and recovery service instance, i.e. test"
+  description = "Add user resource tags to the Backup Recovery instance to organize, track, and manage costs. [Learn more](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#tag-types)."
   default     = []
+
+  validation {
+    condition     = alltrue([for tag in var.resource_tags : can(regex("^[A-Za-z0-9 _\\-.:]{1,128}$", tag))])
+    error_message = "Each resource tag must be 128 characters or less and may contain only A-Z, a-z, 0-9, spaces, underscore (_), hyphen (-), period (.), and colon (:)."
+  }
 }
 
 variable "region" {
@@ -47,12 +57,6 @@ variable "resource_group_id" {
   type        = string
   description = "Resource group ID where the BRS instance exists or will be created."
 }
-
-# variable "kms_key_crn" {
-#   type        = string
-#   description = "The CRN of the key management service key to encrypt the backup data."
-#   default     = null
-# }
 
 ###############################
 # Connection Configuration
@@ -68,7 +72,6 @@ variable "connection_name" {
   type        = string
   description = "Name of the data source connection."
   default     = "brs-connection"
-  nullable    = false
 }
 
 variable "endpoint_type" {
