@@ -9,6 +9,8 @@ locals {
   tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
+  binaries_path                        = "/tmp"
+
 }
 
 module "crn_parser" {
@@ -16,6 +18,21 @@ module "crn_parser" {
   version = "1.4.1"
   count   = local.create_new_instance ? 0 : 1
   crn     = var.existing_brs_instance_crn
+}
+
+resource "terraform_data" "install_dependencies" {
+  depends_on = [
+    terraform_data.delete_policies
+  ]
+  count = (var.install_required_binaries && local.create_new_instance) ? 1 : 0
+  input = {
+    binaries_path = local.binaries_path
+  }
+  provisioner "local-exec" {
+    when        = destroy
+    command     = "${path.module}/scripts/install-binaries.sh ${self.input.binaries_path}"
+    interpreter = ["/bin/bash", "-c"]
+  }
 }
 
 resource "ibm_resource_instance" "backup_recovery_instance" {
@@ -39,6 +56,8 @@ resource "terraform_data" "delete_policies" {
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
     api_key       = sensitive(var.ibmcloud_api_key)
+    binaries_path = local.binaries_path
+
   }
 
   lifecycle {
@@ -49,7 +68,7 @@ resource "terraform_data" "delete_policies" {
 
   provisioner "local-exec" {
     when        = destroy
-    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type}"
+    command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${self.input.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
