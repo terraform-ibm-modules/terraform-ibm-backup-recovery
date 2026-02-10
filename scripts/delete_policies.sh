@@ -4,6 +4,8 @@ set -euo pipefail
 URL=$1
 TENANT=$2
 ENDPOINT_TYPE=$3
+# The binaries downloaded by the install-binaries script are located in the /tmp directory.
+export PATH=$PATH:${4:-"/tmp"}
 
 
 echo "=== Script execution started at $(date) ==="

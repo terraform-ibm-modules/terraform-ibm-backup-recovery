@@ -84,3 +84,10 @@ variable "endpoint_type" {
     error_message = "endpoint_type must be 'public' or 'private'."
   }
 }
+
+variable "install_required_binaries" {
+  type        = bool
+  default     = true
+  description = "When enabled, a script will run during resource destroy to ensure `jq` is available and if not attempt to download it from the public internet and install it to /tmp. Set to false to skip this step."
+  nullable    = false
+}
