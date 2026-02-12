@@ -76,6 +76,7 @@ resource "terraform_data" "delete_policies" {
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
+      # Upgrade compatibility: current code uses self.triggers_replace.api_key; self.input.api_key is only a fallback for older state during upgrades.
       API_KEY = try(self.triggers_replace.api_key, self.input.api_key)
     }
   }
