@@ -22,6 +22,12 @@ variable "resource_tags" {
   default     = []
 }
 
+variable "access_tags" {
+  type        = list(string)
+  description = "Optional list of access tags to be added to the created resources"
+  default     = []
+}
+
 variable "region" {
   type        = string
   description = "IBM Cloud region where the instance is located or will be created."

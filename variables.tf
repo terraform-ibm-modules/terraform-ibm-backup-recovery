@@ -47,6 +47,19 @@ variable "resource_tags" {
   }
 }
 
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the Backup Recovery instance. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for tag in var.access_tags : can(regex("[\\w\\-_\\.]+:[\\w\\-_\\.]+", tag)) && length(tag) <= 128
+    ])
+    error_message = "Tags must match the regular expression `\"[\\w\\-_\\.]+:[\\w\\-_\\.]+\"`. [Learn more](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#limits)."
+  }
+}
+
 variable "region" {
   type        = string
   description = "IBM Cloud region where the instance is located or will be created."

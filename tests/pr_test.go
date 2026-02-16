@@ -3,6 +3,7 @@ package test
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -21,6 +22,7 @@ import (
 
 // Use existing resource group
 const resourceGroup = "geretain-test-resources"
+const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
 
 // Current supported regions
 var validRegions = []string{
@@ -40,14 +42,29 @@ var validRegions = []string{
 const basicExampleDir = "examples/basic"
 const existingBrsExampleDir = "examples/existing-brs"
 
-func setupOptions(t *testing.T, prefix string, dir string, terraformVars map[string]interface{}) *testhelper.TestOptions {
+var permanentResources map[string]interface{}
+
+// TestMain will be run before any parallel tests, used to read data from yaml for use with tests
+func TestMain(m *testing.M) {
+	var err error
+	permanentResources, err = common.LoadMapFromYaml(yamlLocation)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	os.Exit(m.Run())
+}
+
+func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptions {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:       t,
 		TerraformDir:  dir,
 		Prefix:        prefix,
 		ResourceGroup: resourceGroup,
 		Region:        validRegions[common.CryptoIntn(len(validRegions))],
-		TerraformVars: terraformVars,
+		TerraformVars: map[string]interface{}{
+			"access_tags": permanentResources["accessTags"],
+		},
 	})
 	return options
 }
@@ -103,7 +120,7 @@ func cleanupTerraform(t *testing.T, options *terraform.Options, prefix string) {
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-basic", basicExampleDir, nil)
+	options := setupOptions(t, "brs-basic", basicExampleDir)
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -114,7 +131,7 @@ func TestRunBasicExample(t *testing.T) {
 func TestRunUpgradeExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-upg", basicExampleDir, nil)
+	options := setupOptions(t, "brs-upg", basicExampleDir)
 	// Ignore destruction of the delete_policies resource as the input has changed (added api_key)
 	// which causes a recreation of this null resource. This is expected behavior during the upgrade.
 	options.IgnoreDestroys = testhelper.Exemptions{
@@ -133,7 +150,7 @@ func TestRunUpgradeExample(t *testing.T) {
 func TestRunExistingBrsExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-existing", existingBrsExampleDir, nil)
+	options := setupOptions(t, "brs-existing", existingBrsExampleDir)
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -148,14 +165,11 @@ func TestRunExistingInstance(t *testing.T) {
 	defer cleanupTerraform(t, basicOptions, "brs-exist")
 
 	// Provision existing-brs Example using existing brs instance CRN created by the above terraform code.
-	existingBrsVars := map[string]interface{}{
-		"existing_brs_instance_crn": terraform.Output(t, basicOptions, "brs_instance_crn"),
-		"region":                    basicOptions.Vars["region"],
-	}
+	options := setupOptions(t, "brs-exist-adv", existingBrsExampleDir)
+	options.TerraformVars["existing_brs_instance_crn"] = terraform.Output(t, basicOptions, "brs_instance_crn")
+	options.TerraformVars["region"] = basicOptions.Vars["region"]
 
-	existingBrsOptions := setupOptions(t, "brs-exist-adv", existingBrsExampleDir, existingBrsVars)
-
-	outputAdv, errAdv := existingBrsOptions.RunTestConsistency()
+	outputAdv, errAdv := options.RunTestConsistency()
 	assert.Nil(t, errAdv, "existing-brs example with existing instance should succeed")
 	assert.NotNil(t, outputAdv, "Expected output from existing-brs example")
 }

@@ -26,4 +26,5 @@ module "brs" {
   region                    = var.region
   ibmcloud_api_key          = var.ibmcloud_api_key
   resource_tags             = var.resource_tags
+  access_tags               = var.access_tags
 }
