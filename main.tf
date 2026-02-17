@@ -45,6 +45,19 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   tags              = var.resource_tags
 }
 
+data "ibm_iam_access_tag" "access_tag" {
+  for_each = local.create_new_instance && length(var.access_tags) != 0 ? toset(var.access_tags) : []
+  name     = each.value
+}
+
+resource "ibm_resource_tag" "backup_recovery_access_tag" {
+  depends_on  = [data.ibm_iam_access_tag.access_tag]
+  count       = local.create_new_instance && length(var.access_tags) > 0 ? 1 : 0
+  resource_id = ibm_resource_instance.backup_recovery_instance[0].crn
+  tags        = var.access_tags
+  tag_type    = "access"
+}
+
 # When an instance is created, it comes with a few default policies. If these policies are not deleted before
 # attempting to delete the instance, the deletion will fail. This is the expected default behavior — even when
 # an instance is created through the UI, it cannot be deleted until its associated policies are removed first.
