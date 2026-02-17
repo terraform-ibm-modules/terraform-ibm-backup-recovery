@@ -52,7 +52,7 @@ data "ibm_iam_access_tag" "access_tag" {
 
 resource "ibm_resource_tag" "backup_recovery_access_tag" {
   depends_on  = [data.ibm_iam_access_tag.access_tag]
-  count       = !local.create_new_instance || length(var.access_tags) == 0 ? 0 : 1
+  count       = local.create_new_instance && length(var.access_tags) > 0 ? 1 : 0
   resource_id = ibm_resource_instance.backup_recovery_instance[0].crn
   tags        = var.access_tags
   tag_type    = "access"
