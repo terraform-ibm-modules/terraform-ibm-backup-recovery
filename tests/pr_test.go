@@ -55,16 +55,14 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func setupOptions(t *testing.T, prefix string, dir string) *testhelper.TestOptions {
+func setupOptions(t *testing.T, prefix string, dir string, terraformVars map[string]interface{}) *testhelper.TestOptions {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:       t,
 		TerraformDir:  dir,
 		Prefix:        prefix,
 		ResourceGroup: resourceGroup,
 		Region:        validRegions[common.CryptoIntn(len(validRegions))],
-		TerraformVars: map[string]interface{}{
-			"access_tags": permanentResources["accessTags"],
-		},
+		TerraformVars: terraformVars,
 	})
 	return options
 }
@@ -120,7 +118,9 @@ func cleanupTerraform(t *testing.T, options *terraform.Options, prefix string) {
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-basic", basicExampleDir)
+	options := setupOptions(t, "brs-basic", basicExampleDir, map[string]interface{}{
+		"access_tags": permanentResources["accessTags"],
+	})
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -131,7 +131,9 @@ func TestRunBasicExample(t *testing.T) {
 func TestRunUpgradeExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-upg", basicExampleDir)
+	options := setupOptions(t, "brs-upg", basicExampleDir, map[string]interface{}{
+		"access_tags": permanentResources["accessTags"],
+	})
 	// Ignore destruction of the delete_policies resource as the input has changed (added api_key)
 	// which causes a recreation of this null resource. This is expected behavior during the upgrade.
 	options.IgnoreDestroys = testhelper.Exemptions{
@@ -150,7 +152,7 @@ func TestRunUpgradeExample(t *testing.T) {
 func TestRunExistingBrsExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-existing", existingBrsExampleDir)
+	options := setupOptions(t, "brs-existing", existingBrsExampleDir, nil)
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -165,11 +167,14 @@ func TestRunExistingInstance(t *testing.T) {
 	defer cleanupTerraform(t, basicOptions, "brs-exist")
 
 	// Provision existing-brs Example using existing brs instance CRN created by the above terraform code.
-	options := setupOptions(t, "brs-exist-adv", existingBrsExampleDir)
-	options.TerraformVars["existing_brs_instance_crn"] = terraform.Output(t, basicOptions, "brs_instance_crn")
-	options.TerraformVars["region"] = basicOptions.Vars["region"]
+	existingBrsVars := map[string]interface{}{
+		"existing_brs_instance_crn": terraform.Output(t, basicOptions, "brs_instance_crn"),
+		"region":                    basicOptions.Vars["region"],
+	}
 
-	outputAdv, errAdv := options.RunTestConsistency()
+	existingBrsOptions := setupOptions(t, "brs-exist-adv", existingBrsExampleDir, existingBrsVars)
+
+	outputAdv, errAdv := existingBrsOptions.RunTestConsistency()
 	assert.Nil(t, errAdv, "existing-brs example with existing instance should succeed")
 	assert.NotNil(t, outputAdv, "Expected output from existing-brs example")
 }
