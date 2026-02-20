@@ -43,6 +43,11 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   location          = local.brs_instance_region
   resource_group_id = var.resource_group_id
   tags              = var.resource_tags
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "120m"
+  }
 }
 
 data "ibm_iam_access_tag" "access_tag" {
