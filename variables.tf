@@ -80,6 +80,16 @@ variable "connection_name" {
   default     = "brs-connection"
 }
 
+variable "connection_env_type" {
+  type        = string
+  default     = null
+  description = "Type of the data source connection. Allowed values are: 'kIksVpc', 'kIksClassic', 'kRoksVpc', 'kRoksClassic'."
+  validation {
+    condition     = var.connection_env_type == null || contains(["kIksVpc", "kIksClassic", "kRoksVpc", "kRoksClassic"], var.connection_env_type)
+    error_message = "connection_env_type must be one of: 'kIksVpc', 'kIksClassic', 'kRoksVpc', 'kRoksClassic'."
+  }
+}
+
 variable "endpoint_type" {
   type        = string
   description = "The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection. Allowed values are 'public' or 'private'."

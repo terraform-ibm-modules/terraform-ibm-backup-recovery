@@ -10,7 +10,6 @@ locals {
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
   binaries_path                        = "/tmp"
-
 }
 
 module "crn_parser" {
@@ -118,12 +117,13 @@ data "ibm_backup_recovery_data_source_connections" "connections" {
 }
 
 resource "ibm_backup_recovery_data_source_connection" "connection" {
-  count           = var.connection_name != null && var.create_new_connection ? 1 : 0
-  x_ibm_tenant_id = local.tenant_id
-  connection_name = var.connection_name
-  endpoint_type   = var.endpoint_type
-  instance_id     = local.backup_recovery_instance.guid
-  region          = local.brs_instance_region
+  count               = var.connection_name != null && var.create_new_connection ? 1 : 0
+  x_ibm_tenant_id     = local.tenant_id
+  connection_name     = var.connection_name
+  endpoint_type       = var.endpoint_type
+  instance_id         = local.backup_recovery_instance.guid
+  region              = local.brs_instance_region
+  connection_env_type = var.connection_env_type
 }
 
 resource "time_rotating" "token_rotation" {
