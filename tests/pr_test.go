@@ -29,7 +29,7 @@ var validRegions = []string{
 	"us-south",
 	// "us-east", // ignore until issues in this regions are resolved
 	"eu-de",
-	"eu-gb",
+	// "eu-gb", // currently eu-gb seems to have instance provisioning issue.
 	"eu-es",
 	"jp-tok",
 	"jp-osa",
