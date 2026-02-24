@@ -43,9 +43,9 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   resource_group_id = var.resource_group_id
   tags              = var.resource_tags
   timeouts {
-    create = "10h"
-    update = "10h"
-    delete = "10h"
+    create = "60m"
+    update = "60m"
+    delete = "60m"
   }
 }
 
