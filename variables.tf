@@ -83,7 +83,7 @@ variable "connection_name" {
 variable "connection_env_type" {
   type        = string
   default     = null
-  description = "Type of the data source connection. Allowed values are: 'kIksVpc', 'kIksClassic', 'kRoksVpc', 'kRoksClassic'."
+  description = "Type of the data source connection. Set to `null` for VPC and VMware data source connections. Required for IKS/ROKS cluster connections — allowed values are: 'kIksVpc', 'kIksClassic', 'kRoksVpc', 'kRoksClassic'."
   validation {
     condition     = var.connection_env_type == null || contains(["kIksVpc", "kIksClassic", "kRoksVpc", "kRoksClassic"], var.connection_env_type)
     error_message = "connection_env_type must be one of: 'kIksVpc', 'kIksClassic', 'kRoksVpc', 'kRoksClassic'."
