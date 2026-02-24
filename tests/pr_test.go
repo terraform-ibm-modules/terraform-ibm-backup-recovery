@@ -152,11 +152,55 @@ func TestRunUpgradeExample(t *testing.T) {
 func TestRunExistingBrsExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-existing", existingBrsExampleDir, nil)
+	tests := []struct {
+		name              string
+		prefix            string
+		connectionEnvType interface{} // use nil for null, string for specific values
+	}{
+		{
+			name:              "NullEnvType",
+			prefix:            "brs-null",
+			connectionEnvType: nil,
+		},
+		{
+			name:              "IksVpc",
+			prefix:            "brs-iksvpc",
+			connectionEnvType: "kIksVpc",
+		},
+		{
+			name:              "IksClassic",
+			prefix:            "brs-ikscls",
+			connectionEnvType: "kIksClassic",
+		},
+		{
+			name:              "RoksVpc",
+			prefix:            "brs-rksvpc",
+			connectionEnvType: "kRoksVpc",
+		},
+		{
+			name:              "RoksClassic",
+			prefix:            "brs-rkscls",
+			connectionEnvType: "kRoksClassic",
+		},
+	}
 
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
+	for _, tc := range tests {
+		tc := tc // capture range variable
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			vars := map[string]interface{}{}
+			if tc.connectionEnvType != nil {
+				vars["connection_env_type"] = tc.connectionEnvType
+			}
+
+			options := setupOptions(t, tc.prefix, existingBrsExampleDir, vars)
+
+			output, err := options.RunTestConsistency()
+			assert.Nil(t, err, "This should not have errored")
+			assert.NotNil(t, output, "Expected some output")
+		})
+	}
 }
 
 func TestRunExistingInstance(t *testing.T) {
