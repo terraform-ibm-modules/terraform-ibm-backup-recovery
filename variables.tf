@@ -12,11 +12,6 @@ variable "existing_brs_instance_crn" {
   type        = string
   description = "The CRN of the existing Backup & Recovery Service instance. If not provided, a new instance will be created."
   default     = null
-
-  validation {
-    condition     = var.existing_brs_instance_crn == null || var.region == element(split(":", var.existing_brs_instance_crn), 5)
-    error_message = "The provided 'region' does not match the region derived from 'brs_instance_crn'. Please ensure they match."
-  }
 }
 
 variable "instance_name" {

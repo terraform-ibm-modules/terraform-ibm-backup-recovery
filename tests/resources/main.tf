@@ -10,6 +10,13 @@ module "resource_group" {
   existing_resource_group_name = var.resource_group
 }
 
+module "crn_parser" {
+  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
+  version = "1.4.2"
+  count   = local.create_new_instance ? 0 : 1
+  crn     = var.existing_brs_instance_crn
+}
+
 ########################################################################################################################
 # Backup & Recovery Service (BRS) Module
 ########################################################################################################################
@@ -30,8 +37,8 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
 }
 
 data "ibm_resource_instance" "backup_recovery_instance" {
-  count = local.create_new_instance ? 0 : 1
-  crn   = var.existing_brs_instance_crn
+  count      = local.create_new_instance ? 0 : 1
+  identifier = module.crn_parser[0].service_instance
 }
 
 resource "terraform_data" "policy_cleanup" {

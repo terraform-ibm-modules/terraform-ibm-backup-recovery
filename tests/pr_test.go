@@ -21,15 +21,15 @@ import (
 )
 
 // Use existing resource group
-const resourceGroup = "BRT-General-testing"
+const resourceGroup = "geretain-test-resources"
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
 
 // Current supported regions
 var validRegions = []string{
 	"us-south",
-	// "us-east", // ignore until issues in this regions are resolved
+	"us-east",
 	"eu-de",
-	// "eu-gb", // currently eu-gb seems to have instance provisioning issue.
+	"eu-gb",
 	"eu-es",
 	"jp-tok",
 	"jp-osa",
