@@ -5,7 +5,9 @@ locals {
   brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
   brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
   backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
-  backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0])
+  existing_connection_found            = var.connection_name != null && !local.create_new_instance && length(try(data.ibm_backup_recovery_data_source_connections.existing_connections[0].connections, [])) > 0
+  create_connection                    = var.connection_name != null && !local.existing_connection_found
+  backup_recovery_connection           = var.connection_name == null ? null : (local.create_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.existing_connections[0].connections[0])
   tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
@@ -107,8 +109,8 @@ data "ibm_resource_instance" "backup_recovery_instance" {
 }
 
 # data_source_connection
-data "ibm_backup_recovery_data_source_connections" "connections" {
-  count            = var.connection_name != null && !var.create_new_connection ? 1 : 0
+data "ibm_backup_recovery_data_source_connections" "existing_connections" {
+  count            = var.connection_name != null && !local.create_new_instance ? 1 : 0
   x_ibm_tenant_id  = local.tenant_id
   connection_names = [var.connection_name]
   endpoint_type    = var.endpoint_type
@@ -117,7 +119,7 @@ data "ibm_backup_recovery_data_source_connections" "connections" {
 }
 
 resource "ibm_backup_recovery_data_source_connection" "connection" {
-  count               = var.connection_name != null && var.create_new_connection ? 1 : 0
+  count               = local.create_connection ? 1 : 0
   x_ibm_tenant_id     = local.tenant_id
   connection_name     = var.connection_name
   endpoint_type       = var.endpoint_type

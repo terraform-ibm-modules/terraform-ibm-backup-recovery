@@ -68,11 +68,6 @@ variable "resource_group_id" {
 # Connection Configuration
 ###############################
 
-variable "create_new_connection" {
-  type        = bool
-  description = "Set to true to create a new data source connection, false to use existing."
-  default     = true
-}
 
 variable "connection_name" {
   type        = string
