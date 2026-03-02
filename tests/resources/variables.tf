@@ -27,3 +27,9 @@ variable "region" {
   description = "IBM Cloud region where the instance is located or will be created."
   default     = "us-east"
 }
+
+variable "existing_brs_instance_crn" {
+  type        = string
+  description = "The CRN of the existing Backup & Recovery Service instance. If not provided, a new instance will be created."
+  default     = null
+}

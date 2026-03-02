@@ -14,7 +14,13 @@ module "resource_group" {
 # Backup & Recovery Service (BRS) Module
 ########################################################################################################################
 
+locals {
+  create_new_instance = var.existing_brs_instance_crn == null
+  brs_instance        = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
+}
+
 resource "ibm_resource_instance" "backup_recovery_instance" {
+  count             = local.create_new_instance ? 1 : 0
   name              = "${var.prefix}-instance"
   service           = "backup-recovery"
   plan              = "premium"
@@ -23,17 +29,23 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   tags              = var.resource_tags
 }
 
+data "ibm_resource_instance" "backup_recovery_instance" {
+  count = local.create_new_instance ? 0 : 1
+  crn   = var.existing_brs_instance_crn
+}
+
 resource "terraform_data" "policy_cleanup" {
+  count = local.create_new_instance ? 1 : 0
   input = {
-    url           = ibm_resource_instance.backup_recovery_instance.extensions["endpoints.public"]
-    tenant        = "${ibm_resource_instance.backup_recovery_instance.extensions["tenant-id"]}/"
+    url           = local.brs_instance.extensions["endpoints.public"]
+    tenant        = "${local.brs_instance.extensions["tenant-id"]}/"
     endpoint_type = "public"
     api_key       = sensitive(var.ibmcloud_api_key)
   }
 
   lifecycle {
     replace_triggered_by = [
-      ibm_resource_instance.backup_recovery_instance
+      ibm_resource_instance.backup_recovery_instance[0]
     ]
   }
 
