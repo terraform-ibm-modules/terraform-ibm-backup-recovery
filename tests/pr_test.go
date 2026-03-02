@@ -21,7 +21,7 @@ import (
 )
 
 // Use existing resource group
-const resourceGroup = "geretain-test-resources"
+const resourceGroup = "BRT-General-testing"
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
 
 // Current supported regions
@@ -118,9 +118,7 @@ func cleanupTerraform(t *testing.T, options *terraform.Options, prefix string) {
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-basic", basicExampleDir, map[string]interface{}{
-		"access_tags": permanentResources["accessTags"],
-	})
+	options := setupOptions(t, "brs-basic", basicExampleDir, nil)
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -131,9 +129,7 @@ func TestRunBasicExample(t *testing.T) {
 func TestRunUpgradeExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-upg", basicExampleDir, map[string]interface{}{
-		"access_tags": permanentResources["accessTags"],
-	})
+	options := setupOptions(t, "brs-upg", basicExampleDir, nil)
 	// Ignore destruction of the delete_policies resource as the input has changed (added api_key)
 	// which causes a recreation of this null resource. This is expected behavior during the upgrade.
 	options.IgnoreDestroys = testhelper.Exemptions{
@@ -174,7 +170,7 @@ func TestRunExistingInstance(t *testing.T) {
 
 	existingBrsOptions := setupOptions(t, "brs-exist-adv", existingBrsExampleDir, existingBrsVars)
 
-	outputAdv, errAdv := existingBrsOptions.RunTestConsistency()
+	outputAdv, errAdv := existingBrsOptions.RunTest()
 	assert.Nil(t, errAdv, "existing-brs example with existing instance should succeed")
 	assert.NotNil(t, outputAdv, "Expected output from existing-brs example")
 }

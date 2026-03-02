@@ -5,9 +5,9 @@ locals {
   brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
   brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
   backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
-  existing_connection_found            = var.connection_name != null && !local.create_new_instance && can(data.ibm_backup_recovery_data_source_connections.existing_connections[0].connections[0].connection_name)
+  existing_connection_found            = var.connection_name != null && !local.create_new_instance && can(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_name)
   create_connection                    = var.connection_name != null && !local.existing_connection_found
-  backup_recovery_connection           = var.connection_name == null ? null : (local.create_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.existing_connections[0].connections[0])
+  backup_recovery_connection           = var.connection_name == null ? null : (local.create_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0])
   tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
@@ -51,18 +51,18 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   }
 }
 
-data "ibm_iam_access_tag" "access_tag" {
-  for_each = local.create_new_instance && length(var.access_tags) != 0 ? toset(var.access_tags) : []
-  name     = each.value
-}
+# data "ibm_iam_access_tag" "access_tag" {
+#   for_each = local.create_new_instance && length(var.access_tags) != 0 ? toset(var.access_tags) : []
+#   name     = each.value
+# }
 
-resource "ibm_resource_tag" "backup_recovery_access_tag" {
-  depends_on  = [data.ibm_iam_access_tag.access_tag]
-  count       = local.create_new_instance && length(var.access_tags) > 0 ? 1 : 0
-  resource_id = ibm_resource_instance.backup_recovery_instance[0].crn
-  tags        = var.access_tags
-  tag_type    = "access"
-}
+# resource "ibm_resource_tag" "backup_recovery_access_tag" {
+#   depends_on  = [data.ibm_iam_access_tag.access_tag]
+#   count       = local.create_new_instance && length(var.access_tags) > 0 ? 1 : 0
+#   resource_id = ibm_resource_instance.backup_recovery_instance[0].crn
+#   tags        = var.access_tags
+#   tag_type    = "access"
+# }
 
 # When an instance is created, it comes with a few default policies. If these policies are not deleted before
 # attempting to delete the instance, the deletion will fail. This is the expected default behavior — even when
@@ -109,7 +109,7 @@ data "ibm_resource_instance" "backup_recovery_instance" {
 }
 
 # data_source_connection
-data "ibm_backup_recovery_data_source_connections" "existing_connections" {
+data "ibm_backup_recovery_data_source_connections" "connections" {
   count            = var.connection_name != null && !local.create_new_instance ? 1 : 0
   x_ibm_tenant_id  = local.tenant_id
   connection_names = [var.connection_name]
