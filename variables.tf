@@ -70,13 +70,13 @@ variable "resource_group_id" {
 
 variable "create_new_connection" {
   type        = bool
-  description = "Set to true to create a new data source connection, false to use existing."
+  description = "Flag to determine whether to create a new data source connection. If `true` (default), a new connection is created using `connection_name`. If `false`, it looks up an existing connection matching `connection_name`."
   default     = true
 }
 
 variable "connection_name" {
   type        = string
-  description = "Name of the data source connection."
+  description = "Name of the data source connection. If `create_new_connection` is `true` (default), a new connection with this name will be created. If `false`, an existing connection with this name must exist."
   default     = "brs-connection"
 }
 
@@ -117,7 +117,7 @@ variable "policies" {
   type = list(object({
     name = string
 
-    use_default_backup_target = optional(bool)
+    use_default_backup_target = optional(bool, true)
 
     # --- primary_backup_target advanced details ---
     primary_backup_target_details = optional(object({
@@ -311,7 +311,17 @@ variable "policies" {
       }))
     }))
   }))
-  default = []
+  default = [{
+    name = "basic-policy"
+    schedule = {
+      unit         = "Days"
+      day_schedule = { frequency = 1 }
+    }
+    retention = {
+      duration = 2
+      unit     = "Days"
+    }
+  }]
 
   validation {
     condition = alltrue([
@@ -321,5 +331,19 @@ variable "policies" {
       )
     ])
     error_message = "For existing policies, do not provide schedule or retention (both must be null). For custom policies, both schedule and retention are required."
+  }
+
+  validation {
+    condition = alltrue([
+      for p in var.policies : p.schedule == null ? true : contains(["Minutes", "Hours", "Days", "Weeks", "Months", "Years"], p.schedule.unit)
+    ])
+    error_message = "Policy schedule unit must be one of: Minutes, Hours, Days, Weeks, Months, Years."
+  }
+
+  validation {
+    condition = alltrue([
+      for p in var.policies : p.retention == null ? true : contains(["Days", "Weeks", "Months", "Years"], p.retention.unit)
+    ])
+    error_message = "Policy retention unit must be one of: Days, Weeks, Months, Years."
   }
 }
