@@ -144,3 +144,463 @@ resource "ibm_backup_recovery_connection_registration_token" "registration_token
     ]
   }
 }
+
+##############################################################################
+# Protection Policy
+##############################################################################
+
+locals {
+  policies_to_create = { for p in var.policies : p.name => p if p.schedule != null || p.retention != null }
+  policies_to_lookup = { for p in var.policies : p.name => p if p.schedule == null && p.retention == null }
+
+  resolved_policy_ids = merge(
+    { for k, v in ibm_backup_recovery_protection_policy.protection_policy : k => replace(v.id, "${local.tenant_id}::", "") },
+    { for k, v in data.ibm_backup_recovery_protection_policies.existing_policies : k => v.policies[0].id }
+  )
+}
+
+data "ibm_backup_recovery_protection_policies" "existing_policies" {
+  for_each = local.policies_to_lookup
+
+  x_ibm_tenant_id = local.tenant_id
+  instance_id     = local.backup_recovery_instance.guid
+  region          = local.brs_instance_region
+  endpoint_type   = var.endpoint_type
+  policy_names    = [each.value.name]
+}
+
+resource "ibm_backup_recovery_protection_policy" "protection_policy" {
+  for_each = local.policies_to_create
+
+  x_ibm_tenant_id = local.tenant_id
+  name            = each.value.name
+  endpoint_type   = var.endpoint_type
+  instance_id     = local.backup_recovery_instance.guid
+  region          = local.brs_instance_region
+
+  backup_policy {
+    dynamic "bmr" {
+      for_each = each.value.bmr != null ? [each.value.bmr] : []
+      content {
+        schedule {
+          unit = bmr.value.schedule.unit
+          dynamic "day_schedule" {
+            for_each = bmr.value.schedule.day_schedule != null ? [bmr.value.schedule.day_schedule] : []
+            content { frequency = day_schedule.value.frequency }
+          }
+          dynamic "week_schedule" {
+            for_each = bmr.value.schedule.week_schedule != null ? [bmr.value.schedule.week_schedule] : []
+            content { day_of_week = week_schedule.value.day_of_week }
+          }
+          dynamic "month_schedule" {
+            for_each = bmr.value.schedule.month_schedule != null ? [bmr.value.schedule.month_schedule] : []
+            content {
+              day_of_month  = try(month_schedule.value.day_of_month, null)
+              day_of_week   = try(month_schedule.value.day_of_week, null)
+              week_of_month = try(month_schedule.value.week_of_month, null)
+            }
+          }
+          dynamic "year_schedule" {
+            for_each = bmr.value.schedule.year_schedule != null ? [bmr.value.schedule.year_schedule] : []
+            content { day_of_year = year_schedule.value.day_of_year }
+          }
+        }
+        retention {
+          duration = bmr.value.retention.duration
+          unit     = bmr.value.retention.unit
+          dynamic "data_lock_config" {
+            for_each = bmr.value.retention.data_lock_config != null ? [bmr.value.retention.data_lock_config] : []
+            content {
+              mode                           = data_lock_config.value.mode
+              unit                           = data_lock_config.value.unit
+              duration                       = data_lock_config.value.duration
+              enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+            }
+          }
+        }
+      }
+    }
+
+    dynamic "cdp" {
+      for_each = each.value.cdp != null ? [each.value.cdp] : []
+      content {
+        retention {
+          duration = cdp.value.retention.duration
+          unit     = cdp.value.retention.unit
+          dynamic "data_lock_config" {
+            for_each = cdp.value.retention.data_lock_config != null ? [cdp.value.retention.data_lock_config] : []
+            content {
+              mode                           = data_lock_config.value.mode
+              unit                           = data_lock_config.value.unit
+              duration                       = data_lock_config.value.duration
+              enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+            }
+          }
+        }
+      }
+    }
+
+    dynamic "log" {
+      for_each = each.value.log != null ? [each.value.log] : []
+      content {
+        schedule {
+          unit = log.value.schedule.unit
+          dynamic "hour_schedule" {
+            for_each = log.value.schedule.hour_schedule != null ? [log.value.schedule.hour_schedule] : []
+            content { frequency = hour_schedule.value.frequency }
+          }
+          dynamic "minute_schedule" {
+            for_each = log.value.schedule.minute_schedule != null ? [log.value.schedule.minute_schedule] : []
+            content { frequency = minute_schedule.value.frequency }
+          }
+        }
+        retention {
+          duration = log.value.retention.duration
+          unit     = log.value.retention.unit
+          dynamic "data_lock_config" {
+            for_each = log.value.retention.data_lock_config != null ? [log.value.retention.data_lock_config] : []
+            content {
+              mode                           = data_lock_config.value.mode
+              unit                           = data_lock_config.value.unit
+              duration                       = data_lock_config.value.duration
+              enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+            }
+          }
+        }
+      }
+    }
+
+    dynamic "storage_array_snapshot" {
+      for_each = each.value.storage_array_snapshot != null ? [each.value.storage_array_snapshot] : []
+      content {
+        schedule {
+          unit = storage_array_snapshot.value.schedule.unit
+          dynamic "minute_schedule" {
+            for_each = storage_array_snapshot.value.schedule.minute_schedule != null ? [storage_array_snapshot.value.schedule.minute_schedule] : []
+            content { frequency = minute_schedule.value.frequency }
+          }
+          dynamic "hour_schedule" {
+            for_each = storage_array_snapshot.value.schedule.hour_schedule != null ? [storage_array_snapshot.value.schedule.hour_schedule] : []
+            content { frequency = hour_schedule.value.frequency }
+          }
+          dynamic "day_schedule" {
+            for_each = storage_array_snapshot.value.schedule.day_schedule != null ? [storage_array_snapshot.value.schedule.day_schedule] : []
+            content { frequency = day_schedule.value.frequency }
+          }
+          dynamic "week_schedule" {
+            for_each = storage_array_snapshot.value.schedule.week_schedule != null ? [storage_array_snapshot.value.schedule.week_schedule] : []
+            content { day_of_week = week_schedule.value.day_of_week }
+          }
+          dynamic "month_schedule" {
+            for_each = storage_array_snapshot.value.schedule.month_schedule != null ? [storage_array_snapshot.value.schedule.month_schedule] : []
+            content {
+              day_of_month  = try(month_schedule.value.day_of_month, null)
+              day_of_week   = try(month_schedule.value.day_of_week, null)
+              week_of_month = try(month_schedule.value.week_of_month, null)
+            }
+          }
+          dynamic "year_schedule" {
+            for_each = storage_array_snapshot.value.schedule.year_schedule != null ? [storage_array_snapshot.value.schedule.year_schedule] : []
+            content { day_of_year = year_schedule.value.day_of_year }
+          }
+        }
+        retention {
+          duration = storage_array_snapshot.value.retention.duration
+          unit     = storage_array_snapshot.value.retention.unit
+          dynamic "data_lock_config" {
+            for_each = storage_array_snapshot.value.retention.data_lock_config != null ? [storage_array_snapshot.value.retention.data_lock_config] : []
+            content {
+              mode                           = data_lock_config.value.mode
+              unit                           = data_lock_config.value.unit
+              duration                       = data_lock_config.value.duration
+              enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+            }
+          }
+        }
+      }
+    }
+
+    regular {
+      incremental {
+        schedule {
+          unit = each.value.schedule.unit
+
+          dynamic "minute_schedule" {
+            for_each = each.value.schedule.minute_schedule != null ? [each.value.schedule.minute_schedule] : []
+            content {
+              frequency = minute_schedule.value.frequency
+            }
+          }
+          dynamic "hour_schedule" {
+            for_each = each.value.schedule.hour_schedule != null ? [each.value.schedule.hour_schedule] : []
+            content {
+              frequency = hour_schedule.value.frequency
+            }
+          }
+          dynamic "day_schedule" {
+            for_each = each.value.schedule.day_schedule != null ? [each.value.schedule.day_schedule] : []
+            content {
+              frequency = day_schedule.value.frequency
+            }
+          }
+          dynamic "week_schedule" {
+            for_each = each.value.schedule.week_schedule != null ? [each.value.schedule.week_schedule] : []
+            content {
+              day_of_week = week_schedule.value.day_of_week
+            }
+          }
+          dynamic "month_schedule" {
+            for_each = each.value.schedule.month_schedule != null ? [each.value.schedule.month_schedule] : []
+            content {
+              day_of_week   = try(month_schedule.value.day_of_week, null)
+              week_of_month = try(month_schedule.value.week_of_month, null)
+              day_of_month  = try(month_schedule.value.day_of_month, null)
+            }
+          }
+          dynamic "year_schedule" {
+            for_each = each.value.schedule.year_schedule != null ? [each.value.schedule.year_schedule] : []
+            content {
+              day_of_year = year_schedule.value.day_of_year
+            }
+          }
+        }
+      }
+
+      retention {
+        duration = each.value.retention.duration
+        unit     = each.value.retention.unit
+
+        dynamic "data_lock_config" {
+          for_each = each.value.retention.data_lock_config != null ? [each.value.retention.data_lock_config] : []
+          content {
+            mode                           = data_lock_config.value.mode
+            unit                           = data_lock_config.value.unit
+            duration                       = data_lock_config.value.duration
+            enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+          }
+        }
+      }
+
+      primary_backup_target {
+        use_default_backup_target = each.value.use_default_backup_target
+
+        dynamic "archival_target_settings" {
+          for_each = each.value.primary_backup_target_details != null ? [each.value.primary_backup_target_details] : []
+          content {
+            target_id = archival_target_settings.value.target_id
+
+            dynamic "tier_settings" {
+              for_each = archival_target_settings.value.tier_settings != null ? archival_target_settings.value.tier_settings : []
+              content {
+                cloud_platform = tier_settings.value.cloud_platform
+
+                dynamic "aws_tiering" {
+                  for_each = tier_settings.value.aws_tiering != null ? [tier_settings.value.aws_tiering] : []
+                  content {
+                    dynamic "tiers" {
+                      for_each = aws_tiering.value.tiers
+                      content {
+                        tier_type       = tiers.value.tier_type
+                        move_after      = tiers.value.move_after
+                        move_after_unit = tiers.value.move_after_unit
+                      }
+                    }
+                  }
+                }
+                dynamic "azure_tiering" {
+                  for_each = tier_settings.value.azure_tiering != null ? [tier_settings.value.azure_tiering] : []
+                  content {
+                    dynamic "tiers" {
+                      for_each = azure_tiering.value.tiers
+                      content {
+                        tier_type       = tiers.value.tier_type
+                        move_after      = tiers.value.move_after
+                        move_after_unit = tiers.value.move_after_unit
+                      }
+                    }
+                  }
+                }
+                dynamic "google_tiering" {
+                  for_each = tier_settings.value.google_tiering != null ? [tier_settings.value.google_tiering] : []
+                  content {
+                    dynamic "tiers" {
+                      for_each = google_tiering.value.tiers
+                      content {
+                        tier_type       = tiers.value.tier_type
+                        move_after      = tiers.value.move_after
+                        move_after_unit = tiers.value.move_after_unit
+                      }
+                    }
+                  }
+                }
+                dynamic "oracle_tiering" {
+                  for_each = tier_settings.value.oracle_tiering != null ? [tier_settings.value.oracle_tiering] : []
+                  content {
+                    dynamic "tiers" {
+                      for_each = oracle_tiering.value.tiers
+                      content {
+                        tier_type       = tiers.value.tier_type
+                        move_after      = tiers.value.move_after
+                        move_after_unit = tiers.value.move_after_unit
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    dynamic "run_timeouts" {
+      for_each = each.value.run_timeouts != null ? each.value.run_timeouts : []
+      content {
+        timeout_mins = run_timeouts.value.timeout_mins
+        backup_type  = run_timeouts.value.backup_type
+      }
+    }
+  }
+
+  dynamic "blackout_window" {
+    for_each = each.value.blackout_window != null ? each.value.blackout_window : []
+    content {
+      day = blackout_window.value.day
+      start_time {
+        hour      = blackout_window.value.start_time.hour
+        minute    = blackout_window.value.start_time.minute
+        time_zone = blackout_window.value.start_time.time_zone
+      }
+      end_time {
+        hour      = blackout_window.value.end_time.hour
+        minute    = blackout_window.value.end_time.minute
+        time_zone = blackout_window.value.end_time.time_zone
+      }
+    }
+  }
+
+  dynamic "extended_retention" {
+    for_each = each.value.extended_retention != null ? each.value.extended_retention : []
+    content {
+      schedule {
+        unit      = extended_retention.value.schedule.unit
+        frequency = extended_retention.value.schedule.frequency
+      }
+      retention {
+        duration = extended_retention.value.retention.duration
+        unit     = extended_retention.value.retention.unit
+
+        dynamic "data_lock_config" {
+          for_each = extended_retention.value.retention.data_lock_config != null ? [extended_retention.value.retention.data_lock_config] : []
+          content {
+            mode                           = data_lock_config.value.mode
+            unit                           = data_lock_config.value.unit
+            duration                       = data_lock_config.value.duration
+            enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+          }
+        }
+      }
+      run_type  = extended_retention.value.run_type
+      config_id = extended_retention.value.config_id
+    }
+  }
+
+  dynamic "cascaded_targets_config" {
+    for_each = each.value.cascaded_targets_config != null ? [each.value.cascaded_targets_config] : []
+    content {
+      source_cluster_id = cascaded_targets_config.value.source_cluster_id
+      dynamic "remote_targets" {
+        for_each = cascaded_targets_config.value.remote_targets
+        content {
+          dynamic "archival_targets" {
+            for_each = remote_targets.value.archival_targets != null ? remote_targets.value.archival_targets : []
+            content {
+              target_id           = archival_targets.value.target_id
+              backup_run_type     = archival_targets.value.backup_run_type
+              config_id           = archival_targets.value.config_id
+              copy_on_run_success = archival_targets.value.copy_on_run_success
+              schedule {
+                unit      = archival_targets.value.schedule.unit
+                frequency = archival_targets.value.schedule.frequency
+              }
+              retention {
+                duration = archival_targets.value.retention.duration
+                unit     = archival_targets.value.retention.unit
+                dynamic "data_lock_config" {
+                  for_each = archival_targets.value.retention.data_lock_config != null ? [archival_targets.value.retention.data_lock_config] : []
+                  content {
+                    mode                           = data_lock_config.value.mode
+                    unit                           = data_lock_config.value.unit
+                    duration                       = data_lock_config.value.duration
+                    enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+                  }
+                }
+              }
+              dynamic "extended_retention" {
+                for_each = archival_targets.value.extended_retention != null ? archival_targets.value.extended_retention : []
+                content {
+                  schedule {
+                    unit      = extended_retention.value.schedule.unit
+                    frequency = extended_retention.value.schedule.frequency
+                  }
+                  retention {
+                    duration = extended_retention.value.retention.duration
+                    unit     = extended_retention.value.retention.unit
+                    dynamic "data_lock_config" {
+                      for_each = extended_retention.value.retention.data_lock_config != null ? [extended_retention.value.retention.data_lock_config] : []
+                      content {
+                        mode                           = data_lock_config.value.mode
+                        unit                           = data_lock_config.value.unit
+                        duration                       = data_lock_config.value.duration
+                        enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+                      }
+                    }
+                  }
+                  run_type  = extended_retention.value.run_type
+                  config_id = extended_retention.value.config_id
+                }
+              }
+            }
+          }
+
+          dynamic "cloud_spin_targets" {
+            for_each = remote_targets.value.cloud_spin_targets != null ? remote_targets.value.cloud_spin_targets : []
+            content {
+              dynamic "target" {
+                for_each = cloud_spin_targets.value.target != null ? [cloud_spin_targets.value.target] : []
+                content {
+                  id = target.value.id
+                }
+              }
+              backup_run_type     = cloud_spin_targets.value.backup_run_type
+              config_id           = cloud_spin_targets.value.config_id
+              copy_on_run_success = cloud_spin_targets.value.copy_on_run_success
+              schedule {
+                unit      = cloud_spin_targets.value.schedule.unit
+                frequency = cloud_spin_targets.value.schedule.frequency
+              }
+              retention {
+                duration = cloud_spin_targets.value.retention.duration
+                unit     = cloud_spin_targets.value.retention.unit
+                dynamic "data_lock_config" {
+                  for_each = cloud_spin_targets.value.retention.data_lock_config != null ? [cloud_spin_targets.value.retention.data_lock_config] : []
+                  content {
+                    mode                           = data_lock_config.value.mode
+                    unit                           = data_lock_config.value.unit
+                    duration                       = data_lock_config.value.duration
+                    enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  retry_options {
+    retries             = 3
+    retry_interval_mins = 5
+  }
+}

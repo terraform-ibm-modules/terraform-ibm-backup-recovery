@@ -32,3 +32,13 @@ output "connection_name" {
   description = "Name of the data source connection."
   value       = local.backup_recovery_connection == null ? null : local.backup_recovery_connection.connection_name
 }
+
+output "resolved_policy_ids" {
+  description = "Map of all policy names (both created and looked up) to their IDs."
+  value       = local.resolved_policy_ids
+}
+
+output "protection_policy_ids" {
+  description = "Map of newly created protection policy names to their IDs (does not include pre-existing policies)."
+  value       = { for k, v in ibm_backup_recovery_protection_policy.protection_policy : k => v.id }
+}
