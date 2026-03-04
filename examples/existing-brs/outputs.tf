@@ -33,3 +33,13 @@ output "resource_group_id" {
   description = "ID of the resource group used."
   value       = module.resource_group.resource_group_id
 }
+
+output "resolved_policy_ids" {
+  description = "Map of all policy names (both created and looked up) to their IDs."
+  value       = module.brs.resolved_policy_ids
+}
+
+output "protection_policy_ids" {
+  description = "Map of newly created protection policy names to their IDs."
+  value       = module.brs.protection_policy_ids
+}
