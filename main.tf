@@ -142,6 +142,10 @@ resource "ibm_backup_recovery_connection_registration_token" "registration_token
     replace_triggered_by = [
       time_rotating.token_rotation
     ]
+    # Force recreation instead of update since this resource cannot be updated
+    create_before_destroy = true
+    # Ignore all changes to force replacement on any drift
+    ignore_changes = all
   }
 }
 
