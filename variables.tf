@@ -70,7 +70,7 @@ variable "resource_group_id" {
 
 variable "create_new_connection" {
   type        = bool
-  description = "Flag to determine whether to create a new data source connection. If `true` (default), a new connection is created using `connection_name`. If `false`, it looks up an existing connection matching `connection_name`."
+  description = "Whether to create a new data source connection. If set to true (default), a new connection is established using `connection_name`. If set to false, the system searches for and uses an existing connection that matches `connection_name`."
   default     = true
 }
 
