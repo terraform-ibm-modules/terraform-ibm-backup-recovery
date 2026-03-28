@@ -22,8 +22,26 @@ module "brs" {
   resource_group_id = module.resource_group.resource_group_id
   instance_name     = "${var.prefix}-instance"
   connection_name   = "${var.prefix}-instance"
-  region            = var.region
+  region            = var.existing_brs_instance_crn == null ? var.region : element(split(":", var.existing_brs_instance_crn), 5)
   ibmcloud_api_key  = var.ibmcloud_api_key
   resource_tags     = var.resource_tags
   access_tags       = var.access_tags
+  # existing_brs_instance_crn is set to avoid creating new BRS instance during the local testing.
+  # For PR testing, this will be null for basic example and a new BRS instance will be created.
+  existing_brs_instance_crn = var.existing_brs_instance_crn
+  connection_env_type       = var.connection_env_type
+  policies = [{
+    name = "${var.prefix}-policy"
+    schedule = {
+      unit = "Hours"
+      hour_schedule = {
+        frequency = 6
+      }
+    }
+    retention = {
+      duration = 4
+      unit     = "Weeks"
+    }
+    use_default_backup_target = true
+  }]
 }
