@@ -28,17 +28,7 @@ module "brs" {
   resource_tags             = var.resource_tags
   connection_env_type       = var.connection_env_type
   policies = [{
-    name = "${var.prefix}-policy"
-    schedule = {
-      unit = "Hours"
-      hour_schedule = {
-        frequency = 6
-      }
-    }
-    retention = {
-      duration = 4
-      unit     = "Weeks"
-    }
-    use_default_backup_target = true
+    name              = "Bronze"
+    create_new_policy = false
   }]
 }

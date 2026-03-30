@@ -127,8 +127,23 @@ resource "ibm_backup_recovery_data_source_connection" "connection" {
 }
 
 resource "time_rotating" "token_rotation" {
+  count         = var.connection_name != null ? 1 : 0
   rotation_days = 1
 }
+
+# This terraform_data resource acts as a rotation trigger. When time_rotating
+# rotates, this resource is replaced, which in turn forces the registration
+# token to be recreated via replace_triggered_by. This two-stage approach
+# avoids hitting the provider's CustomizeDiff that blocks updates on the
+# ibm_backup_recovery_connection_registration_token resource.
+resource "terraform_data" "token_rotation_trigger" {
+  count = var.connection_name != null ? 1 : 0
+
+  triggers_replace = {
+    rotation = time_rotating.token_rotation[0].rotation_rfc3339
+  }
+}
+
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
   count           = var.connection_name != null ? 1 : 0
   connection_id   = local.backup_recovery_connection.connection_id
@@ -137,15 +152,10 @@ resource "ibm_backup_recovery_connection_registration_token" "registration_token
   instance_id     = local.backup_recovery_instance.guid
   region          = local.brs_instance_region
 
-  # This forces a replacement every time the time_rotating resource rotates
   lifecycle {
     replace_triggered_by = [
-      time_rotating.token_rotation
+      terraform_data.token_rotation_trigger[0]
     ]
-    # Force recreation instead of update since this resource cannot be updated
-    create_before_destroy = true
-    # Ignore all changes to force replacement on any drift
-    ignore_changes = all
   }
 }
 
@@ -154,8 +164,9 @@ resource "ibm_backup_recovery_connection_registration_token" "registration_token
 ##############################################################################
 
 locals {
-  policies_to_create = { for p in var.policies : p.name => p if p.schedule != null || p.retention != null }
-  policies_to_lookup = { for p in var.policies : p.name => p if p.schedule == null && p.retention == null }
+  # Explicitly filter based on the new boolean flag
+  policies_to_create = { for p in var.policies : p.name => p if p.create_new_policy }
+  policies_to_lookup = { for p in var.policies : p.name => p if !p.create_new_policy }
 
   resolved_policy_ids = merge(
     { for k, v in ibm_backup_recovery_protection_policy.protection_policy : k => replace(v.id, "${local.tenant_id}::", "") },
