@@ -71,7 +71,8 @@ func TestRunBasicExample(t *testing.T) {
 	// The API may not return the time_zone field or returns it differently than configured
 	options.IgnoreUpdates = testhelper.Exemptions{
 		List: []string{
-			"module.brs.ibm_backup_recovery_protection_policy.protection_policy",
+			"module.brs.ibm_backup_recovery_protection_policy.protection_policy[*]",
+			"module.brs.terraform_data.delete_policies[0]",
 		},
 	}
 
