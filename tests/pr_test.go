@@ -67,6 +67,14 @@ func TestRunBasicExample(t *testing.T) {
 		"access_tags": permanentResources["accessTags"],
 	})
 
+	// Ignore updates to the protection policy resource due to blackout_window time_zone drift
+	// The API may not return the time_zone field or returns it differently than configured
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.brs.ibm_backup_recovery_protection_policy.protection_policy[\"brs-basic-*-policy\"]",
+		},
+	}
+
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
