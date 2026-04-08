@@ -327,11 +327,11 @@ variable "policies" {
   validation {
     condition = alltrue([
       for p in var.policies : (
-        (p.schedule == null && p.retention == null) ||
+        p.create_new_policy == false ||
         (p.schedule != null && p.retention != null)
       )
     ])
-    error_message = "For custom policies, both schedule and retention are required."
+    error_message = "When create_new_policy is true, both schedule and retention are required."
   }
 
   # 2. Unit Enumerations (Registry Constraint: "Allowable values: Days, Weeks, Months, Years")

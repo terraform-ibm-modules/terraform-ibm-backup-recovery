@@ -29,8 +29,9 @@ module "brs" {
   existing_brs_instance_crn = var.existing_brs_instance_crn
   connection_env_type       = var.connection_env_type
   policies = [{
-    name              = "${var.prefix}-policy"
-    create_new_policy = true
+    name                      = "${var.prefix}-policy"
+    create_new_policy         = true
+    use_default_backup_target = true
     schedule = {
       unit = "Hours"
       hour_schedule = {
@@ -41,6 +42,18 @@ module "brs" {
       duration = 4
       unit     = "Weeks"
     }
-    use_default_backup_target = true
+    blackout_window = [{
+      day = "Sunday"
+      start_time = {
+        hour      = 2
+        minute    = 0
+        time_zone = "America/New_York"
+      }
+      end_time = {
+        hour      = 6
+        minute    = 0
+        time_zone = "America/New_York"
+      }
+    }]
   }]
 }
