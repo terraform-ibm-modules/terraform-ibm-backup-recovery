@@ -68,17 +68,12 @@ resource "ibm_resource_tag" "backup_recovery_access_tag" {
 resource "terraform_data" "delete_policies" {
   count = local.create_new_instance ? 1 : 0
 
-
   input = {
     url           = var.endpoint_type == "public" ? local.backup_recovery_instance_public_url : local.backup_recovery_instance_private_url
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
     binaries_path = local.binaries_path
-  }
-
-  # Move the sensitive key here to prevent it appearing in the 'output' attribute
-  triggers_replace = {
-    api_key = sensitive(var.ibmcloud_api_key)
+    api_key       = var.ibmcloud_api_key
   }
 
   lifecycle {
@@ -93,8 +88,7 @@ resource "terraform_data" "delete_policies" {
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      # Upgrade compatibility: current code uses self.triggers_replace.api_key; self.input.api_key is only a fallback for older state during upgrades.
-      API_KEY = try(self.triggers_replace.api_key, self.input.api_key)
+      API_KEY = self.input.api_key
     }
   }
 }
