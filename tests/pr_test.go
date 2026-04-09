@@ -79,13 +79,6 @@ func TestRunUpgradeExample(t *testing.T) {
 	options := setupOptions(t, "brs-upg", basicExampleDir, map[string]interface{}{
 		"access_tags": permanentResources["accessTags"],
 	})
-	// Ignore destruction of the delete_policies resource as the input has changed (added api_key)
-	// which causes a recreation of this null resource. This is expected behavior during the upgrade.
-	options.IgnoreDestroys = testhelper.Exemptions{
-		List: []string{
-			"module.brs.terraform_data.delete_policies[0]",
-		},
-	}
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {

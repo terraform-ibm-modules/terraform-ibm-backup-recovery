@@ -48,10 +48,12 @@ module "brs" {
     #   start_time = {
     #     hour      = 2
     #     minute    = 0
+    #     time_zone = "America/Los_Angeles"
     #   }
     #   end_time = {
     #     hour      = 6
     #     minute    = 0
+    #     time_zone = "America/Los_Angeles"
     #   }
     # }]
   }]

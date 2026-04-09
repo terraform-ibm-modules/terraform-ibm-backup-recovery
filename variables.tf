@@ -307,6 +307,50 @@ variable "policies" {
             unit             = string
             data_lock_config = optional(object({ mode = string, unit = string, duration = number, enable_worm_on_external_target = optional(bool, false) }))
           })
+          log_retention = optional(object({
+            duration         = number
+            unit             = string
+            data_lock_config = optional(object({ mode = string, unit = string, duration = number, enable_worm_on_external_target = optional(bool, false) }))
+          }))
+          run_timeouts = optional(list(object({
+            timeout_mins = optional(number)
+            backup_type  = optional(string)
+          })))
+        })))
+        replication_targets = optional(list(object({
+          target_type         = string
+          backup_run_type     = optional(string)
+          config_id           = optional(string)
+          copy_on_run_success = optional(bool)
+          schedule = object({
+            unit      = string
+            frequency = optional(number)
+          })
+          retention = object({
+            duration         = number
+            unit             = string
+            data_lock_config = optional(object({ mode = string, unit = string, duration = number, enable_worm_on_external_target = optional(bool, false) }))
+          })
+          log_retention = optional(object({
+            duration         = number
+            unit             = string
+            data_lock_config = optional(object({ mode = string, unit = string, duration = number, enable_worm_on_external_target = optional(bool, false) }))
+          }))
+          run_timeouts = optional(list(object({
+            timeout_mins = optional(number)
+            backup_type  = optional(string)
+          })))
+          aws_target_config = optional(object({
+            region    = number
+            source_id = number
+          }))
+          azure_target_config = optional(object({
+            resource_group = optional(number)
+            source_id      = number
+          }))
+          remote_target_config = optional(object({
+            cluster_id = number
+          }))
         })))
       }))
     }))

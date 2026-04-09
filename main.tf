@@ -601,6 +601,99 @@ resource "ibm_backup_recovery_protection_policy" "protection_policy" {
                   }
                 }
               }
+              dynamic "log_retention" {
+                for_each = cloud_spin_targets.value.log_retention != null ? [cloud_spin_targets.value.log_retention] : []
+                content {
+                  duration = log_retention.value.duration
+                  unit     = log_retention.value.unit
+                  dynamic "data_lock_config" {
+                    for_each = log_retention.value.data_lock_config != null ? [log_retention.value.data_lock_config] : []
+                    content {
+                      mode                           = data_lock_config.value.mode
+                      unit                           = data_lock_config.value.unit
+                      duration                       = data_lock_config.value.duration
+                      enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+                    }
+                  }
+                }
+              }
+              dynamic "run_timeouts" {
+                for_each = cloud_spin_targets.value.run_timeouts != null ? cloud_spin_targets.value.run_timeouts : []
+                content {
+                  timeout_mins = run_timeouts.value.timeout_mins
+                  backup_type  = run_timeouts.value.backup_type
+                }
+              }
+            }
+          }
+
+          dynamic "replication_targets" {
+            for_each = remote_targets.value.replication_targets != null ? remote_targets.value.replication_targets : []
+            content {
+              target_type         = replication_targets.value.target_type
+              backup_run_type     = replication_targets.value.backup_run_type
+              config_id           = replication_targets.value.config_id
+              copy_on_run_success = replication_targets.value.copy_on_run_success
+              schedule {
+                unit      = replication_targets.value.schedule.unit
+                frequency = replication_targets.value.schedule.frequency
+              }
+              retention {
+                duration = replication_targets.value.retention.duration
+                unit     = replication_targets.value.retention.unit
+                dynamic "data_lock_config" {
+                  for_each = replication_targets.value.retention.data_lock_config != null ? [replication_targets.value.retention.data_lock_config] : []
+                  content {
+                    mode                           = data_lock_config.value.mode
+                    unit                           = data_lock_config.value.unit
+                    duration                       = data_lock_config.value.duration
+                    enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+                  }
+                }
+              }
+              dynamic "log_retention" {
+                for_each = replication_targets.value.log_retention != null ? [replication_targets.value.log_retention] : []
+                content {
+                  duration = log_retention.value.duration
+                  unit     = log_retention.value.unit
+                  dynamic "data_lock_config" {
+                    for_each = log_retention.value.data_lock_config != null ? [log_retention.value.data_lock_config] : []
+                    content {
+                      mode                           = data_lock_config.value.mode
+                      unit                           = data_lock_config.value.unit
+                      duration                       = data_lock_config.value.duration
+                      enable_worm_on_external_target = data_lock_config.value.enable_worm_on_external_target
+                    }
+                  }
+                }
+              }
+              dynamic "run_timeouts" {
+                for_each = replication_targets.value.run_timeouts != null ? replication_targets.value.run_timeouts : []
+                content {
+                  timeout_mins = run_timeouts.value.timeout_mins
+                  backup_type  = run_timeouts.value.backup_type
+                }
+              }
+              dynamic "aws_target_config" {
+                for_each = replication_targets.value.aws_target_config != null ? [replication_targets.value.aws_target_config] : []
+                content {
+                  region    = aws_target_config.value.region
+                  source_id = aws_target_config.value.source_id
+                }
+              }
+              dynamic "azure_target_config" {
+                for_each = replication_targets.value.azure_target_config != null ? [replication_targets.value.azure_target_config] : []
+                content {
+                  resource_group = azure_target_config.value.resource_group
+                  source_id      = azure_target_config.value.source_id
+                }
+              }
+              dynamic "remote_target_config" {
+                for_each = replication_targets.value.remote_target_config != null ? [replication_targets.value.remote_target_config] : []
+                content {
+                  cluster_id = remote_target_config.value.cluster_id
+                }
+              }
             }
           }
         }
