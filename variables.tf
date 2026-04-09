@@ -113,7 +113,7 @@ variable "install_required_binaries" {
 ###############################
 
 variable "policies" {
-  description = "A list of protection policies to create or look up. For new policies, provide `schedule` and `retention`. To reference existing policies by name, omit `schedule` and `retention`."
+  description = "A list of protection policies to create or look up. Set `create_new_policy` to `true` (default) to create a new policy with the specified `schedule` and `retention`. Set `create_new_policy` to `false` to reference an existing policy by `name`."
   type = list(object({
     name                      = string
     create_new_policy         = optional(bool, true)
