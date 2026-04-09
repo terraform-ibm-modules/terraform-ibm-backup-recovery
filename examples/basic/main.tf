@@ -42,5 +42,17 @@ module "brs" {
       duration = 4
       unit     = "Weeks"
     }
+    # See, https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6738
+    # blackout_window = [{
+    #   day = "Sunday"
+    #   start_time = {
+    #     hour      = 2
+    #     minute    = 0
+    #   }
+    #   end_time = {
+    #     hour      = 6
+    #     minute    = 0
+    #   }
+    # }]
   }]
 }
