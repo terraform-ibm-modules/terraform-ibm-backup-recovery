@@ -33,3 +33,15 @@ variable "region" {
   description = "IBM Cloud region where the instance is located or will be created."
   default     = "us-east"
 }
+
+variable "existing_brs_instance_crn" {
+  description = "CRN of the Backup & Recovery Service instance."
+  type        = string
+  default     = null
+}
+
+variable "connection_env_type" {
+  type        = string
+  default     = null
+  description = "Type of the data source connection. Set to `null` for VPC and VMware data source connections. Required for IKS/ROKS cluster connections — allowed values are: 'kIksVpc', 'kIksClassic', 'kRoksVpc', 'kRoksClassic'."
+}
