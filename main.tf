@@ -175,14 +175,14 @@ data "ibm_backup_recovery_protection_policies" "existing_policies" {
   instance_id     = local.backup_recovery_instance.guid
   region          = local.brs_instance_region
   endpoint_type   = var.endpoint_type
-  policy_names    = [each.value.name]
+  policy_names    = [each.key]
 }
 
 resource "ibm_backup_recovery_protection_policy" "protection_policy" {
   for_each = local.policies_to_create
 
   x_ibm_tenant_id = local.tenant_id
-  name            = each.value.name
+  name            = each.key
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid
   region          = local.brs_instance_region
