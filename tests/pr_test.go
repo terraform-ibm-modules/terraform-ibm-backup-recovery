@@ -80,6 +80,14 @@ func TestRunUpgradeExample(t *testing.T) {
 		"access_tags": permanentResources["accessTags"],
 	})
 
+	// Ignore updates to service_endpoints during upgrade test
+	// This is expected when upgrading from older versions that didn't have this parameter
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.brs.ibm_resource_instance.backup_recovery_instance[0]",
+		},
+	}
+
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
 		assert.Nil(t, err, "This should not have errored")
