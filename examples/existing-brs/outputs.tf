@@ -1,12 +1,6 @@
 ########################################################################################################################
 # Outputs
 ########################################################################################################################
-
-output "brs_instance" {
-  description = "Details of the BRS instance."
-  value       = module.brs.brs_instance
-}
-
 output "tenant_id" {
   description = "BRS tenant ID (with trailing slash)."
   value       = module.brs.tenant_id

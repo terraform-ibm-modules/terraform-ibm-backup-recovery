@@ -28,6 +28,8 @@ module "brs" {
   access_tags               = var.access_tags
   existing_brs_instance_crn = var.existing_brs_instance_crn
   connection_env_type       = var.connection_env_type
+  service_endpoints         = var.service_endpoints
+  parameters                = var.parameters
   policies = [{
     name                      = "${var.prefix}-policy"
     create_new_policy         = true

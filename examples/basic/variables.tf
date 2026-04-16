@@ -45,3 +45,15 @@ variable "connection_env_type" {
   default     = null
   description = "Type of the data source connection. Set to `null` for VPC and VMware data source connections. Required for IKS/ROKS cluster connections — allowed values are: 'kIksVpc', 'kIksClassic', 'kRoksVpc', 'kRoksClassic'."
 }
+
+variable "service_endpoints" {
+  type        = string
+  description = "Types of service endpoints to enable for the Backup Recovery instance. Allowed values: 'public', 'private', 'public-and-private'."
+  default     = "public"
+}
+
+variable "parameters" {
+  type        = map(string)
+  description = "Optional parameters to configure the Backup Recovery Service instance. Example: { \"key1\" = \"value1\", \"key2\" = \"value2\" }"
+  default     = null
+}

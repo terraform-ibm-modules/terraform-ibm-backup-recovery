@@ -63,6 +63,38 @@ variable "resource_group_id" {
   type        = string
   description = "Resource group ID where the BRS instance exists or will be created."
 }
+variable "parameters" {
+  type        = map(string)
+  description = "Arbitrary parameters to configure the Backup Recovery Service instance. The value must be a map of key-value pairs. Conflicts with `parameters_json`. For service-specific parameters, refer to the IBM Cloud documentation."
+  default     = null
+}
+
+variable "parameters_json" {
+  type        = string
+  description = "Arbitrary parameters as a JSON string to configure the Backup Recovery Service instance. Conflicts with `parameters`. Use this when you need to pass complex nested structures."
+  default     = null
+
+  validation {
+    condition     = var.parameters_json == null || can(jsondecode(var.parameters_json))
+    error_message = "parameters_json must be a valid JSON string."
+  }
+
+  validation {
+    condition     = !(var.parameters != null && var.parameters_json != null)
+    error_message = "Only one of 'parameters' or 'parameters_json' can be specified, not both."
+  }
+}
+
+variable "service_endpoints" {
+  type        = string
+  description = "Types of service endpoints to enable for the Backup Recovery instance. Allowed values: 'public', 'private', 'public-and-private'. This controls which network endpoints are available for accessing the service."
+  default     = "public"
+
+  validation {
+    condition     = contains(["public", "private", "public-and-private"], var.service_endpoints)
+    error_message = "service_endpoints must be one of: 'public', 'private', 'public-and-private'."
+  }
+}
 
 ###############################
 # Connection Configuration

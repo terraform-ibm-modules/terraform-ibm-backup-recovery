@@ -42,6 +42,9 @@ resource "ibm_resource_instance" "backup_recovery_instance" {
   location          = local.brs_instance_region
   resource_group_id = var.resource_group_id
   tags              = var.resource_tags
+  parameters        = var.parameters
+  parameters_json   = var.parameters_json
+  service_endpoints = var.service_endpoints
   timeouts {
     create = "60m"
     update = "60m"
