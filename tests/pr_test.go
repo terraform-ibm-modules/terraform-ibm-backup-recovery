@@ -88,6 +88,14 @@ func TestRunUpgradeExample(t *testing.T) {
 		},
 	}
 
+	// Ignore recreate of delete_policies resource during upgrade test
+	// This resource is recreated when the instance details change
+	options.IgnoreDestroys = testhelper.Exemptions{
+		List: []string{
+			"module.brs.terraform_data.delete_policies[0]",
+		},
+	}
+
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
 		assert.Nil(t, err, "This should not have errored")
