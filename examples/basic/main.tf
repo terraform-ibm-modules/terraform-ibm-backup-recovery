@@ -29,7 +29,7 @@ module "brs" {
   existing_brs_instance_crn = var.existing_brs_instance_crn
   connection_env_type       = var.connection_env_type
   service_endpoints         = var.service_endpoints
-  parameters                = var.parameters
+  parameters_json           = var.parameters_json
   policies = [{
     name                      = "${var.prefix}-policy"
     create_new_policy         = true

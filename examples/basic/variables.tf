@@ -52,8 +52,8 @@ variable "service_endpoints" {
   default     = "public"
 }
 
-variable "parameters" {
-  type        = map(string)
-  description = "Optional parameters to configure the Backup Recovery Service instance. Example: { \"key1\" = \"value1\", \"key2\" = \"value2\" }"
+variable "parameters_json" {
+  type        = string
+  description = "Optional JSON string to configure the Backup Recovery Service instance. Example: jsonencode({ key1 = \"value1\", nested = { enabled = true } })"
   default     = null
 }

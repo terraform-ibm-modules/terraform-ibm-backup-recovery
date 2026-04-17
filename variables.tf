@@ -36,6 +36,16 @@ variable "plan" {
   }
 }
 
+variable "service" {
+  type        = string
+  description = "Service type for the Backup and Recovery instance. Currently, only `backup-recovery` is supported. This input is parameterized so additional allowed values such as `backup-recovery-tests` can be added later."
+  default     = "backup-recovery"
+  validation {
+    condition     = trimspace(var.service) == "backup-recovery"
+    error_message = "service must be exactly `backup-recovery`."
+  }
+}
+
 variable "resource_tags" {
   type        = list(string)
   description = "Add user resource tags to the Backup Recovery instance to organize, track, and manage costs. [Learn more](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#tag-types)."
@@ -63,25 +73,14 @@ variable "resource_group_id" {
   type        = string
   description = "Resource group ID where the BRS instance exists or will be created."
 }
-variable "parameters" {
-  type        = map(string)
-  description = "Arbitrary parameters to configure the Backup Recovery Service instance. The value must be a map of key-value pairs. Conflicts with `parameters_json`. For service-specific parameters, refer to the IBM Cloud documentation."
-  default     = null
-}
-
 variable "parameters_json" {
   type        = string
-  description = "Arbitrary parameters as a JSON string to configure the Backup Recovery Service instance. Conflicts with `parameters`. Use this when you need to pass complex nested structures."
+  description = "Arbitrary parameters as a JSON string to configure the Backup Recovery Service instance. Currently supported keys are `custom-prov-code` (for development purposes only) and `kms-root-key-crn` (to encrypt the BRS instance with a customer-managed encryption key)."
   default     = null
 
   validation {
     condition     = var.parameters_json == null || can(jsondecode(var.parameters_json))
     error_message = "parameters_json must be a valid JSON string."
-  }
-
-  validation {
-    condition     = !(var.parameters != null && var.parameters_json != null)
-    error_message = "Only one of 'parameters' or 'parameters_json' can be specified, not both."
   }
 }
 

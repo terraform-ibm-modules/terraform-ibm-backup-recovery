@@ -37,12 +37,11 @@ resource "terraform_data" "install_dependencies" {
 resource "ibm_resource_instance" "backup_recovery_instance" {
   count             = local.create_new_instance ? 1 : 0
   name              = var.instance_name
-  service           = "backup-recovery"
+  service           = var.service
   plan              = var.plan
   location          = local.brs_instance_region
   resource_group_id = var.resource_group_id
   tags              = var.resource_tags
-  parameters        = var.parameters
   parameters_json   = var.parameters_json
   service_endpoints = var.service_endpoints
   timeouts {
