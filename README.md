@@ -129,7 +129,6 @@ You need the following permissions to run this module:
 | <a name="input_region"></a> [region](#input\_region) | IBM Cloud region where the instance is located or will be created. | `string` | `"us-east"` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | Resource group ID where the BRS instance exists or will be created. | `string` | n/a | yes |
 | <a name="input_resource_tags"></a> [resource\_tags](#input\_resource\_tags) | Add user resource tags to the Backup Recovery instance to organize, track, and manage costs. [Learn more](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#tag-types). | `list(string)` | `[]` | no |
-| <a name="input_service"></a> [service](#input\_service) | Service type for the Backup and Recovery instance. Currently, only `backup-recovery` is supported. This input is parameterized so additional allowed values such as `backup-recovery-tests` can be added later. | `string` | `"backup-recovery"` | no |
 | <a name="input_service_endpoints"></a> [service\_endpoints](#input\_service\_endpoints) | Types of service endpoints to enable for the Backup Recovery instance. Allowed values: 'public', 'private', 'public-and-private'. This controls which network endpoints are available for accessing the service. | `string` | `"public"` | no |
 
 ### Outputs

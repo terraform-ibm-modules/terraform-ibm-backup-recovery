@@ -80,14 +80,6 @@ func TestRunUpgradeExample(t *testing.T) {
 		"access_tags": permanentResources["accessTags"],
 	})
 
-	// Ignore updates to service_endpoints during upgrade test
-	// This is expected when upgrading from older versions that didn't have this parameter
-	options.IgnoreUpdates = testhelper.Exemptions{
-		List: []string{
-			"module.brs.ibm_resource_instance.backup_recovery_instance[0]",
-		},
-	}
-
 	// Ignore recreate of delete_policies resource during upgrade test
 	// This resource is recreated when the instance details change
 	options.IgnoreDestroys = testhelper.Exemptions{

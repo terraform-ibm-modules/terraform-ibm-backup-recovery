@@ -36,16 +36,6 @@ variable "plan" {
   }
 }
 
-variable "service" {
-  type        = string
-  description = "Service type for the Backup and Recovery instance. Currently, only `backup-recovery` is supported. This input is parameterized so additional allowed values such as `backup-recovery-tests` can be added later."
-  default     = "backup-recovery"
-  validation {
-    condition     = trimspace(var.service) == "backup-recovery"
-    error_message = "service must be exactly `backup-recovery`."
-  }
-}
-
 variable "resource_tags" {
   type        = list(string)
   description = "Add user resource tags to the Backup Recovery instance to organize, track, and manage costs. [Learn more](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#tag-types)."
