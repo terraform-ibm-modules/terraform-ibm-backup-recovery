@@ -28,6 +28,8 @@ module "brs" {
   access_tags               = var.access_tags
   existing_brs_instance_crn = var.existing_brs_instance_crn
   connection_env_type       = var.connection_env_type
+  service_endpoints         = var.service_endpoints
+  parameters_json           = var.parameters_json
   policies = [{
     name                      = "${var.prefix}-policy"
     create_new_policy         = true
@@ -48,11 +50,71 @@ module "brs" {
     #   start_time = {
     #     hour      = 2
     #     minute    = 0
+    #     time_zone = "America/Los_Angeles"
     #   }
     #   end_time = {
     #     hour      = 6
     #     minute    = 0
+    #     time_zone = "America/Los_Angeles"
     #   }
     # }]
+
+    # Example: Cascaded targets configuration with newly supported properties
+    # cascaded_targets_config = {
+    #   source_cluster_id = 123456789
+    #   remote_targets = [{
+    #     replication_targets = [{
+    #       target_type         = "RemoteCluster"
+    #       backup_run_type     = "Regular"
+    #       copy_on_run_success = true
+    #       schedule = {
+    #         unit      = "Runs"
+    #         frequency = 1
+    #       }
+    #       retention = {
+    #         duration = 7
+    #         unit     = "Days"
+    #       }
+    #       # Newly added: log_retention support
+    #       log_retention = {
+    #         duration = 3
+    #         unit     = "Days"
+    #       }
+    #       # Newly added: run_timeouts support
+    #       run_timeouts = [{
+    #         timeout_mins = 60
+    #         backup_type  = "kRegular"
+    #       }]
+    #       remote_target_config = {
+    #         cluster_id = 987654321
+    #       }
+    #     }]
+    #     cloud_spin_targets = [{
+    #       backup_run_type     = "Full"
+    #       copy_on_run_success = true
+    #       schedule = {
+    #         unit      = "Days"
+    #         frequency = 1
+    #       }
+    #       retention = {
+    #         duration = 30
+    #         unit     = "Days"
+    #       }
+    #       # Newly added: log_retention support
+    #       log_retention = {
+    #         duration = 7
+    #         unit     = "Days"
+    #       }
+    #       # Newly added: run_timeouts support
+    #       run_timeouts = [{
+    #         timeout_mins = 120
+    #         backup_type  = "kFull"
+    #       }]
+    #       target = {
+    #         id = 12345
+    #       }
+    #     }]
+    #   }]
+    # }
   }]
 }

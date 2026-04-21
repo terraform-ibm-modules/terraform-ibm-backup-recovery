@@ -63,6 +63,27 @@ variable "resource_group_id" {
   type        = string
   description = "Resource group ID where the BRS instance exists or will be created."
 }
+variable "parameters_json" {
+  type        = string
+  description = "Arbitrary parameters as a JSON string to configure the Backup Recovery Service instance. Currently supported keys are `custom-prov-code` (for development purposes only) and `kms-root-key-crn` (to encrypt the BRS instance with a customer-managed encryption key)."
+  default     = null
+
+  validation {
+    condition     = var.parameters_json == null || can(jsondecode(var.parameters_json))
+    error_message = "parameters_json must be a valid JSON string."
+  }
+}
+
+variable "service_endpoints" {
+  type        = string
+  description = "Types of service endpoints to enable for the Backup Recovery instance. Allowed values: 'public', 'private', 'public-and-private'. This controls which network endpoints are available for accessing the service."
+  default     = "public"
+
+  validation {
+    condition     = contains(["public", "private", "public-and-private"], var.service_endpoints)
+    error_message = "service_endpoints must be one of: 'public', 'private', 'public-and-private'."
+  }
+}
 
 ###############################
 # Connection Configuration
@@ -307,6 +328,50 @@ variable "policies" {
             unit             = string
             data_lock_config = optional(object({ mode = string, unit = string, duration = number, enable_worm_on_external_target = optional(bool, false) }))
           })
+          log_retention = optional(object({
+            duration         = number
+            unit             = string
+            data_lock_config = optional(object({ mode = string, unit = string, duration = number, enable_worm_on_external_target = optional(bool, false) }))
+          }))
+          run_timeouts = optional(list(object({
+            timeout_mins = optional(number)
+            backup_type  = optional(string)
+          })))
+        })))
+        replication_targets = optional(list(object({
+          target_type         = string
+          backup_run_type     = optional(string)
+          config_id           = optional(string)
+          copy_on_run_success = optional(bool)
+          schedule = object({
+            unit      = string
+            frequency = optional(number)
+          })
+          retention = object({
+            duration         = number
+            unit             = string
+            data_lock_config = optional(object({ mode = string, unit = string, duration = number, enable_worm_on_external_target = optional(bool, false) }))
+          })
+          log_retention = optional(object({
+            duration         = number
+            unit             = string
+            data_lock_config = optional(object({ mode = string, unit = string, duration = number, enable_worm_on_external_target = optional(bool, false) }))
+          }))
+          run_timeouts = optional(list(object({
+            timeout_mins = optional(number)
+            backup_type  = optional(string)
+          })))
+          aws_target_config = optional(object({
+            region    = number
+            source_id = number
+          }))
+          azure_target_config = optional(object({
+            resource_group = optional(number)
+            source_id      = number
+          }))
+          remote_target_config = optional(object({
+            cluster_id = number
+          }))
         })))
       }))
     }))

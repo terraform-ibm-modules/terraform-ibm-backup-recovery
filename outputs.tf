@@ -42,3 +42,18 @@ output "protection_policy_ids" {
   description = "Map of newly created protection policy names to their IDs (does not include pre-existing policies)."
   value       = { for k, v in ibm_backup_recovery_protection_policy.protection_policy : k => v.id }
 }
+
+output "brs_instance_dashboard_url" {
+  description = "Cluster endpoint URL for the BRS instance. Use this to access the service console."
+  value       = local.backup_recovery_instance.extensions["cluster-endpoint"]
+}
+
+output "brs_instance_status" {
+  description = "Current status of the BRS instance (e.g., active, provisioning, failed)."
+  value       = local.backup_recovery_instance.resource_status
+}
+
+output "brs_instance_state" {
+  description = "Current state of the BRS instance. For example, if the instance is deleted, it will return 'removed'."
+  value       = try(local.backup_recovery_instance.state, null)
+}
