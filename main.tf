@@ -75,7 +75,6 @@ resource "terraform_data" "delete_policies" {
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
     binaries_path = local.binaries_path
-    api_key       = var.ibmcloud_api_key
   }
 
   triggers_replace = {
@@ -87,7 +86,7 @@ resource "terraform_data" "delete_policies" {
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      API_KEY = self.triggers_replace
+      API_KEY = self.triggers_replace.api_key
     }
   }
 }
