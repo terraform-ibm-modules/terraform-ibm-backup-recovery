@@ -84,7 +84,7 @@ resource "terraform_data" "delete_policies" {
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      API_KEY = self.input.api_key
+      API_KEY = sensitive(self.input.api_key)
     }
   }
 }
