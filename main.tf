@@ -75,22 +75,17 @@ resource "terraform_data" "delete_policies" {
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
     binaries_path = local.binaries_path
-    api_key       = var.ibmcloud_api_key
   }
-
-  lifecycle {
-    replace_triggered_by = [
-      ibm_resource_instance.backup_recovery_instance[0]
-    ]
+  triggers_replace = {
+    api_key = var.ibmcloud_api_key
   }
-
   provisioner "local-exec" {
     when        = destroy
     command     = "${path.module}/scripts/delete_policies.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${self.input.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
 
     environment = {
-      API_KEY = try(self.triggers_replace.api_key, self.input.api_key)
+      API_KEY = self.triggers_replace.api_key
     }
   }
 }
