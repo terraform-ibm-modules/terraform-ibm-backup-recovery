@@ -76,7 +76,6 @@ resource "terraform_data" "delete_policies" {
     endpoint_type = var.endpoint_type
     binaries_path = local.binaries_path
   }
-
   triggers_replace = {
     api_key = var.ibmcloud_api_key
   }
