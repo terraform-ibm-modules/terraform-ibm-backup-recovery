@@ -14,7 +14,7 @@ locals {
 
 module "crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.6.1"
+  version = "1.8.0"
   count   = local.create_new_instance ? 0 : 1
   crn     = var.existing_brs_instance_crn
 }
