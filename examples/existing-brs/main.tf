@@ -27,8 +27,4 @@ module "brs" {
   ibmcloud_api_key          = var.ibmcloud_api_key
   resource_tags             = var.resource_tags
   connection_env_type       = var.connection_env_type
-  policies = [{
-    name              = "Bronze"
-    create_new_policy = false
-  }]
 }
