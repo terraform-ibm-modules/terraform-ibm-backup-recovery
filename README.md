@@ -15,14 +15,14 @@ Use this module to automate BRS setup in IBM Cloud with Terraform.
 ## Overview
 <ul>
   <li><a href="#terraform-ibm-backup-recovery">terraform-ibm-backup-recovery</a></li>
-  <li><a href="./examples">Examples</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples">Examples</a>
     <ul>
       <li>
-        <a href="./examples/basic">Basic example</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples/basic">Basic example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=backup-recovery-basic-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples/basic"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/existing-brs">existing-brs example</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples/existing-brs">existing-brs example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=backup-recovery-existing-brs-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-backup-recovery/tree/main/examples/existing-brs"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
     </ul>
@@ -90,7 +90,7 @@ You need the following permissions to run this module:
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_crn_parser"></a> [crn\_parser](#module\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.5.0 |
+| <a name="module_crn_parser"></a> [crn\_parser](#module\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.9.0 |
 
 ### Resources
 
@@ -118,6 +118,7 @@ You need the following permissions to run this module:
 | <a name="input_connection_env_type"></a> [connection\_env\_type](#input\_connection\_env\_type) | Type of the data source connection. Set to `null` for VPC and VMware data source connections. Required for IKS/ROKS cluster connections — allowed values are: 'kIksVpc', 'kIksClassic', 'kRoksVpc', 'kRoksClassic'. | `string` | `null` | no |
 | <a name="input_connection_name"></a> [connection\_name](#input\_connection\_name) | Name of the data source connection. If `create_new_connection` is `true` (default), a new connection with this name will be created. If `false`, an existing connection with this name must exist. | `string` | `"brs-connection"` | no |
 | <a name="input_create_new_connection"></a> [create\_new\_connection](#input\_create\_new\_connection) | Whether to create a new data source connection. If set to true (default), a new connection is established using `connection_name`. If set to false, the system searches for and uses an existing connection that matches `connection_name`. | `bool` | `true` | no |
+| <a name="input_create_new_instance"></a> [create\_new\_instance](#input\_create\_new\_instance) | Whether to provision a new Backup & Recovery Service instance. When left as `null` (default), the behaviour is inferred from `existing_brs_instance_crn` (a new instance is created when the CRN is not provided). Set this explicitly to `false` to reuse an existing instance whose CRN is only known after apply (for example, an instance created earlier in the same apply and passed to a second consumer); this keeps the module's `count`/`for_each` gates from depending on an unknown value at plan time. | `bool` | `null` | no |
 | <a name="input_endpoint_type"></a> [endpoint\_type](#input\_endpoint\_type) | The endpoint type to use when connecting to the Backup and Recovery service for creating a data source connection. Allowed values are 'public' or 'private'. | `string` | `"public"` | no |
 | <a name="input_existing_brs_instance_crn"></a> [existing\_brs\_instance\_crn](#input\_existing\_brs\_instance\_crn) | The CRN of the existing Backup & Recovery Service instance. If not provided, a new instance will be created. | `string` | `null` | no |
 | <a name="input_ibmcloud_api_key"></a> [ibmcloud\_api\_key](#input\_ibmcloud\_api\_key) | The IBM Cloud platform API key needed to deploy IAM enabled resources. | `string` | n/a | yes |

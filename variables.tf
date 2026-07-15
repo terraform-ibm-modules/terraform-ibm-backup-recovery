@@ -14,9 +14,15 @@ variable "existing_brs_instance_crn" {
   default     = null
 
   validation {
-    condition     = var.existing_brs_instance_crn == null || var.region == element(split(":", var.existing_brs_instance_crn), 5)
+    condition     = var.existing_brs_instance_crn == null || var.region == try(element(split(":", var.existing_brs_instance_crn), 5), "")
     error_message = "The provided 'region' does not match the region derived from 'brs_instance_crn'. Please ensure they match."
   }
+}
+
+variable "create_new_instance" {
+  type        = bool
+  description = "Whether to provision a new Backup & Recovery Service instance. When left as `null` (default), the behaviour is inferred from `existing_brs_instance_crn` (a new instance is created when the CRN is not provided). Set this explicitly to `false` to reuse an existing instance whose CRN is only known after apply (for example, an instance created earlier in the same apply and passed to a second consumer); this keeps the module's `count`/`for_each` gates from depending on an unknown value at plan time."
+  default     = null
 }
 
 variable "instance_name" {

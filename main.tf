@@ -1,7 +1,12 @@
 
 locals {
-  # Determine whether to create new resources or use existing ones
-  create_new_instance                  = var.existing_brs_instance_crn == null || var.existing_brs_instance_crn == ""
+  # Determine whether to create new resources or use existing ones.
+  # When var.create_new_instance is set explicitly it takes precedence; otherwise
+  # the behaviour is inferred from existing_brs_instance_crn (backward-compatible).
+  # An explicit value lets callers reuse an instance whose CRN is only known after
+  # apply (e.g. one created earlier in the same apply) without making the
+  # count/for_each gates below depend on an unknown value.
+  create_new_instance                  = var.create_new_instance != null ? var.create_new_instance : (var.existing_brs_instance_crn == null || var.existing_brs_instance_crn == "")
   brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
   brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
   backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
@@ -14,7 +19,7 @@ locals {
 
 module "crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.5.0"
+  version = "1.9.0"
   count   = local.create_new_instance ? 0 : 1
   crn     = var.existing_brs_instance_crn
 }

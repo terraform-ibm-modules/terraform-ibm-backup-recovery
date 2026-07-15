@@ -4,7 +4,7 @@
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
-  version = "1.6.0"
+  version = "1.6.1"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -27,8 +27,4 @@ module "brs" {
   ibmcloud_api_key          = var.ibmcloud_api_key
   resource_tags             = var.resource_tags
   connection_env_type       = var.connection_env_type
-  policies = [{
-    name              = "Bronze"
-    create_new_policy = false
-  }]
 }
