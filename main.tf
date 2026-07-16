@@ -26,7 +26,8 @@ module "crn_parser" {
 
 resource "terraform_data" "install_dependencies" {
   depends_on = [
-    terraform_data.delete_policies
+    terraform_data.delete_policies,
+    terraform_data.cleanup_connectors,
   ]
   count = (var.install_required_binaries && local.create_new_instance) ? 1 : 0
   input = {
@@ -133,13 +134,14 @@ resource "terraform_data" "cleanup_connectors" {
     tenant        = local.tenant_id
     endpoint_type = var.endpoint_type
     connection_id = ibm_backup_recovery_data_source_connection.connection[0].connection_id
+    binaries_path = local.binaries_path
   }
   triggers_replace = {
     api_key = var.ibmcloud_api_key
   }
   provisioner "local-exec" {
     when        = destroy
-    command     = "${path.module}/scripts/delete_connectors.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${self.input.connection_id}"
+    command     = "${path.module}/scripts/delete_connectors.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${self.input.connection_id} ${self.input.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
 
     environment = {

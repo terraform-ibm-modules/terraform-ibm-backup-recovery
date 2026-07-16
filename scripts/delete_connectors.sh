@@ -4,7 +4,7 @@
 # This must run BEFORE the connection itself is deleted, otherwise BRS will
 # reject the connection-delete request if any connectors are still registered.
 #
-# Usage: delete_connectors.sh <URL> <TENANT> <ENDPOINT_TYPE> <CONNECTION_ID>
+# Usage: delete_connectors.sh <URL> <TENANT> <ENDPOINT_TYPE> <CONNECTION_ID> [BINARIES_PATH]
 # Env:   API_KEY   - IBM Cloud API key (sensitive; passed via environment)
 set -euo pipefail
 
@@ -12,6 +12,10 @@ URL=$1
 TENANT=$2
 ENDPOINT_TYPE=$3
 CONNECTION_ID=$4
+# The binaries downloaded by install_dependencies are placed in BINARIES_PATH
+# (defaults to /tmp, matching install-binaries.sh). Extend PATH so jq is found
+# even when it is not globally installed on the runner.
+export PATH=$PATH:${5:-"/tmp"}
 
 echo "=== delete_connectors.sh started at $(date) ==="
 echo "URL: $URL, TENANT: $TENANT, ENDPOINT_TYPE: $ENDPOINT_TYPE, CONNECTION_ID: $CONNECTION_ID"
