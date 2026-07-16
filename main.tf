@@ -42,7 +42,7 @@ resource "terraform_data" "install_dependencies" {
 resource "ibm_resource_instance" "backup_recovery_instance" {
   count             = local.create_new_instance ? 1 : 0
   name              = var.instance_name
-  service           = "backup-recovery"
+  service           = var.service_type
   plan              = var.plan
   location          = local.brs_instance_region
   resource_group_id = var.resource_group_id
@@ -142,7 +142,7 @@ resource "terraform_data" "token_rotation_trigger" {
 
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
   count           = var.connection_name != null ? 1 : 0
-  connection_id   = try(local.backup_recovery_connection.connection_id, null)
+  connection_id   = local.backup_recovery_connection.connection_id
   x_ibm_tenant_id = local.tenant_id
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid
