@@ -142,7 +142,7 @@ resource "terraform_data" "token_rotation_trigger" {
 
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
   count           = var.connection_name != null ? 1 : 0
-  connection_id   = local.backup_recovery_connection.connection_id
+  connection_id   = try(local.backup_recovery_connection.connection_id, null)
   x_ibm_tenant_id = local.tenant_id
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid
