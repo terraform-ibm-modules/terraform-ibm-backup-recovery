@@ -87,6 +87,13 @@ func TestRunUpgradeExample(t *testing.T) {
 			"module.brs.terraform_data.delete_policies[0]",
 		},
 	}
+	// cleanup_connectors is a new resource introduced in this PR; it will not
+	// exist in the base (old) state so the upgrade plan shows it as +create.
+	options.IgnoreAdds = testhelper.Exemptions{
+		List: []string{
+			"module.brs.terraform_data.cleanup_connectors[0]",
+		},
+	}
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
