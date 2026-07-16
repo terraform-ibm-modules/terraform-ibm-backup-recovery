@@ -87,6 +87,22 @@ func TestRunUpgradeExample(t *testing.T) {
 			"module.brs.terraform_data.delete_policies[0]",
 		},
 	}
+	// cleanup_connectors is a new resource introduced in this PR; it will not
+	// exist in the base (old) state so the upgrade plan shows it as +create.
+	options.IgnoreAdds = testhelper.Exemptions{
+		List: []string{
+			"module.brs.terraform_data.cleanup_connectors[0]",
+		},
+	}
+	// connection_id on registration_token gains a sensitivity annotation in the
+	// new version (flows through a null-guarded local that wraps a sensitive
+	// resource attribute). The value itself is unchanged; only its sensitivity
+	// marking changes, producing a spurious in-place update in the upgrade plan.
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.brs.ibm_backup_recovery_connection_registration_token.registration_token[0]",
+		},
+	}
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
