@@ -10,7 +10,7 @@ locals {
   brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
   brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
   backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
-  backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0] : try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0], null))
+  backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0], null) : try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0], null))
   tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
@@ -121,6 +121,34 @@ resource "ibm_backup_recovery_data_source_connection" "connection" {
   region              = local.brs_instance_region
   connection_env_type = var.connection_env_type
 }
+# This resource deletes all connectors registered against the connection before
+# the connection itself is destroyed. Without this, BRS will reject the connection
+# delete because connectors (deployed by the DSC Helm chart) are still registered.
+# destroy ordering: cleanup_connectors is destroyed first, connection second.
+resource "terraform_data" "cleanup_connectors" {
+  count = var.connection_name != null && var.create_new_connection ? 1 : 0
+
+  input = {
+    url           = var.endpoint_type == "public" ? local.backup_recovery_instance_public_url : local.backup_recovery_instance_private_url
+    tenant        = local.tenant_id
+    endpoint_type = var.endpoint_type
+    connection_id = ibm_backup_recovery_data_source_connection.connection[0].connection_id
+  }
+  triggers_replace = {
+    api_key = var.ibmcloud_api_key
+  }
+  provisioner "local-exec" {
+    when        = destroy
+    command     = "${path.module}/scripts/delete_connectors.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${self.input.connection_id}"
+    interpreter = ["/bin/bash", "-c"]
+
+    environment = {
+      API_KEY = self.triggers_replace.api_key
+    }
+  }
+
+  depends_on = [ibm_backup_recovery_data_source_connection.connection]
+}
 
 resource "time_rotating" "token_rotation" {
   count         = var.connection_name != null ? 1 : 0
@@ -142,7 +170,7 @@ resource "terraform_data" "token_rotation_trigger" {
 
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
   count           = var.connection_name != null ? 1 : 0
-  connection_id   = local.backup_recovery_connection.connection_id
+  connection_id   = local.backup_recovery_connection != null ? local.backup_recovery_connection.connection_id : ""
   x_ibm_tenant_id = local.tenant_id
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid
