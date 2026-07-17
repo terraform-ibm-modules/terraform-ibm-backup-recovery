@@ -25,7 +25,6 @@ var validRegions = []string{
 	"eu-es",
 	"jp-tok",
 	"jp-osa",
-	"au-syd",
 	"ca-tor",
 	"br-sao",
 }
