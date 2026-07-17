@@ -67,6 +67,14 @@ func TestRunBasicExample(t *testing.T) {
 		"access_tags": permanentResources["accessTags"],
 	})
 
+	// ibm_resource_tag re-normalises access tags on every read, causing a
+	// phantom diff on the consistency re-plan. Exempt it from the update check.
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.brs.ibm_resource_tag.backup_recovery_access_tag[0]",
+		},
+	}
+
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
@@ -92,6 +100,13 @@ func TestRunUpgradeExample(t *testing.T) {
 	options.IgnoreAdds = testhelper.Exemptions{
 		List: []string{
 			"module.brs.terraform_data.cleanup_connectors[0]",
+		},
+	}
+	// ibm_resource_tag re-normalises access tags on every read, causing a
+	// phantom diff on the upgrade plan. Exempt it from the update check.
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.brs.ibm_resource_tag.backup_recovery_access_tag[0]",
 		},
 	}
 
