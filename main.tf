@@ -15,6 +15,17 @@ locals {
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
   binaries_path                        = "/tmp"
+
+  # Gate registration-token creation on a connection_id actually being available.
+  # For new connections (create_new_connection=true) the ID is unknown at plan time but will
+  # be populated after apply, so we keep count=1 whenever connection_name is set.
+  # For existing connections (create_new_connection=false) the data source is evaluated at
+  # plan time; if no match is found the id is "" and we must NOT create the token resource
+  # (the provider rejects connection_id="" with a validation error).
+  create_registration_token = var.connection_name != null && (
+    var.create_new_connection ||
+    try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id, "") != ""
+  )
 }
 
 module "crn_parser" {
@@ -153,7 +164,7 @@ resource "terraform_data" "cleanup_connectors" {
 }
 
 resource "time_rotating" "token_rotation" {
-  count         = var.connection_name != null ? 1 : 0
+  count         = local.create_registration_token ? 1 : 0
   rotation_days = 1
 }
 
@@ -163,7 +174,7 @@ resource "time_rotating" "token_rotation" {
 # avoids hitting the provider's CustomizeDiff that blocks updates on the
 # ibm_backup_recovery_connection_registration_token resource.
 resource "terraform_data" "token_rotation_trigger" {
-  count = var.connection_name != null ? 1 : 0
+  count = local.create_registration_token ? 1 : 0
 
   triggers_replace = {
     rotation = time_rotating.token_rotation[0].rotation_rfc3339
@@ -171,7 +182,7 @@ resource "terraform_data" "token_rotation_trigger" {
 }
 
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
-  count           = var.connection_name != null ? 1 : 0
+  count           = local.create_registration_token ? 1 : 0
   connection_id   = var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0].connection_id, "") : try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id, "")
   x_ibm_tenant_id = local.tenant_id
   endpoint_type   = var.endpoint_type
