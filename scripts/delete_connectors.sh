@@ -54,9 +54,10 @@ BODY=$(cat "$RESP_FILE")
 rm "$RESP_FILE"
 
 if [[ "$HTTP_CODE" != "200" ]]; then
-  # A 404 means the connection is already gone — nothing to clean up.
-  if [[ "$HTTP_CODE" == "404" ]]; then
-    echo "Connection not found (HTTP 404) — nothing to delete. Exiting cleanly."
+  # A 404, or a 400 containing "does not exist", means the connection is already
+  # gone from BRS — nothing to clean up. Exit cleanly instead of hard-erroring.
+  if [[ "$HTTP_CODE" == "404" ]] || ([[ "$HTTP_CODE" == "400" ]] && echo "$BODY" | grep -q "does not exist"); then
+    echo "Connection not found (HTTP ${HTTP_CODE}) — nothing to delete. Exiting cleanly."
     exit 0
   fi
   echo "Error listing connectors: HTTP $HTTP_CODE" >&2
