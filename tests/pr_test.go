@@ -68,23 +68,23 @@ func TestRunBasicExample(t *testing.T) {
 
 	// ibm_resource_tag re-normalises access tags on every read, causing a
 	// phantom diff on the consistency re-plan. Exempt it from the update check.
-	options.IgnoreUpdates = testhelper.Exemptions{
-		List: []string{
-			"module.brs.ibm_resource_tag.backup_recovery_access_tag[0]",
-		},
-	}
+	// options.IgnoreUpdates = testhelper.Exemptions{
+	// 	List: []string{
+	// 		"module.brs.ibm_resource_tag.backup_recovery_access_tag[0]",
+	// 	},
+	// }
 	// Skip refresh on the consistency re-plan: PostApplyHook fires after apply but
 	// before the re-plan, so ExtraArgs.Plan is set in time. The BRS provider
 	// hard-errors on Read when a stale connection ID is in state (provider bug).
-	options.PostApplyHook = func(o *testhelper.TestOptions) error {
-		o.TerraformOptions.ExtraArgs.Plan = append(o.TerraformOptions.ExtraArgs.Plan, "-refresh=false")
-		return nil
-	}
+	// options.PostApplyHook = func(o *testhelper.TestOptions) error {
+	// 	o.TerraformOptions.ExtraArgs.Plan = append(o.TerraformOptions.ExtraArgs.Plan, "-refresh=false")
+	// 	return nil
+	// }
 	// Skip refresh on destroy for the same reason.
-	options.PreDestroyHook = func(o *testhelper.TestOptions) error {
-		o.TerraformOptions.ExtraArgs.Destroy = append(o.TerraformOptions.ExtraArgs.Destroy, "-refresh=false")
-		return nil
-	}
+	// options.PreDestroyHook = func(o *testhelper.TestOptions) error {
+	// 	o.TerraformOptions.ExtraArgs.Destroy = append(o.TerraformOptions.ExtraArgs.Destroy, "-refresh=false")
+	// 	return nil
+	// }
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -101,38 +101,38 @@ func TestRunUpgradeExample(t *testing.T) {
 
 	// Ignore recreate of delete_policies resource during upgrade test
 	// This resource is recreated when the instance details change
-	options.IgnoreDestroys = testhelper.Exemptions{
-		List: []string{
-			"module.brs.terraform_data.delete_policies[0]",
-		},
-	}
+	// options.IgnoreDestroys = testhelper.Exemptions{
+	// 	List: []string{
+	// 		"module.brs.terraform_data.delete_policies[0]",
+	// 	},
+	// }
 	// cleanup_connectors is a new resource introduced in this PR; it will not
 	// exist in the base (old) state so the upgrade plan shows it as +create.
-	options.IgnoreAdds = testhelper.Exemptions{
-		List: []string{
-			"module.brs.terraform_data.cleanup_connectors[0]",
-		},
-	}
+	// options.IgnoreAdds = testhelper.Exemptions{
+	// 	List: []string{
+	// 		"module.brs.terraform_data.cleanup_connectors[0]",
+	// 	},
+	// }
 	// ibm_resource_tag re-normalises access tags on every read, causing a
 	// phantom diff on the upgrade plan. Exempt it from the update check.
-	options.IgnoreUpdates = testhelper.Exemptions{
-		List: []string{
-			"module.brs.ibm_resource_tag.backup_recovery_access_tag[0]",
-		},
-	}
+	// options.IgnoreUpdates = testhelper.Exemptions{
+	// 	List: []string{
+	// 		"module.brs.ibm_resource_tag.backup_recovery_access_tag[0]",
+	// 	},
+	// }
 	// Skip refresh on the upgrade plan: PostApplyHook fires after the base-branch
 	// apply but before the PR-branch plan, so ExtraArgs.Plan is set in time. The
 	// BRS provider hard-errors on Read when a stale connection ID is in state
 	// (provider bug).
-	options.PostApplyHook = func(o *testhelper.TestOptions) error {
-		o.TerraformOptions.ExtraArgs.Plan = append(o.TerraformOptions.ExtraArgs.Plan, "-refresh=false")
-		return nil
-	}
+	// options.PostApplyHook = func(o *testhelper.TestOptions) error {
+	// 	o.TerraformOptions.ExtraArgs.Plan = append(o.TerraformOptions.ExtraArgs.Plan, "-refresh=false")
+	// 	return nil
+	// }
 	// Skip refresh on destroy for the same reason.
-	options.PreDestroyHook = func(o *testhelper.TestOptions) error {
-		o.TerraformOptions.ExtraArgs.Destroy = append(o.TerraformOptions.ExtraArgs.Destroy, "-refresh=false")
-		return nil
-	}
+	// options.PreDestroyHook = func(o *testhelper.TestOptions) error {
+	// 	o.TerraformOptions.ExtraArgs.Destroy = append(o.TerraformOptions.ExtraArgs.Destroy, "-refresh=false")
+	// 	return nil
+	// }
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
