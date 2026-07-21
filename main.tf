@@ -10,11 +10,22 @@ locals {
   brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
   brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
   backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
-  backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? ibm_backup_recovery_data_source_connection.connection[0] : data.ibm_backup_recovery_data_source_connections.connections[0].connections[0])
+  backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0], null) : try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0], null))
   tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
   binaries_path                        = "/tmp"
+
+  # Gate registration-token creation on a connection_id actually being available.
+  # For new connections (create_new_connection=true) the ID is unknown at plan time but will
+  # be populated after apply, so we keep count=1 whenever connection_name is set.
+  # For existing connections (create_new_connection=false) the data source is evaluated at
+  # plan time; if no match is found the id is "" and we must NOT create the token resource
+  # (the provider rejects connection_id="" with a validation error).
+  create_registration_token = var.connection_name != null && (
+    var.create_new_connection ||
+    try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id, "") != ""
+  )
 }
 
 module "crn_parser" {
@@ -26,7 +37,8 @@ module "crn_parser" {
 
 resource "terraform_data" "install_dependencies" {
   depends_on = [
-    terraform_data.delete_policies
+    terraform_data.delete_policies,
+    terraform_data.cleanup_connectors,
   ]
   count = (var.install_required_binaries && local.create_new_instance) ? 1 : 0
   input = {
@@ -42,7 +54,7 @@ resource "terraform_data" "install_dependencies" {
 resource "ibm_resource_instance" "backup_recovery_instance" {
   count             = local.create_new_instance ? 1 : 0
   name              = var.instance_name
-  service           = "backup-recovery"
+  service           = var.service_type
   plan              = var.plan
   location          = local.brs_instance_region
   resource_group_id = var.resource_group_id
@@ -121,9 +133,38 @@ resource "ibm_backup_recovery_data_source_connection" "connection" {
   region              = local.brs_instance_region
   connection_env_type = var.connection_env_type
 }
+# This resource deletes all connectors registered against the connection before
+# the connection itself is destroyed. Without this, BRS will reject the connection
+# delete because connectors (deployed by the DSC Helm chart) are still registered.
+# destroy ordering: cleanup_connectors is destroyed first, connection second.
+resource "terraform_data" "cleanup_connectors" {
+  count = var.connection_name != null && var.create_new_connection ? 1 : 0
+
+  input = {
+    url           = var.endpoint_type == "public" ? local.backup_recovery_instance_public_url : local.backup_recovery_instance_private_url
+    tenant        = local.tenant_id
+    endpoint_type = var.endpoint_type
+    connection_id = ibm_backup_recovery_data_source_connection.connection[0].connection_id
+    binaries_path = local.binaries_path
+  }
+  triggers_replace = {
+    api_key = var.ibmcloud_api_key
+  }
+  provisioner "local-exec" {
+    when        = destroy
+    command     = "${path.module}/scripts/delete_connectors.sh ${self.input.url} ${self.input.tenant} ${self.input.endpoint_type} ${self.input.connection_id} ${self.input.binaries_path}"
+    interpreter = ["/bin/bash", "-c"]
+
+    environment = {
+      API_KEY = self.triggers_replace.api_key
+    }
+  }
+
+  depends_on = [ibm_backup_recovery_data_source_connection.connection]
+}
 
 resource "time_rotating" "token_rotation" {
-  count         = var.connection_name != null ? 1 : 0
+  count         = local.create_registration_token ? 1 : 0
   rotation_days = 1
 }
 
@@ -133,7 +174,7 @@ resource "time_rotating" "token_rotation" {
 # avoids hitting the provider's CustomizeDiff that blocks updates on the
 # ibm_backup_recovery_connection_registration_token resource.
 resource "terraform_data" "token_rotation_trigger" {
-  count = var.connection_name != null ? 1 : 0
+  count = local.create_registration_token ? 1 : 0
 
   triggers_replace = {
     rotation = time_rotating.token_rotation[0].rotation_rfc3339
@@ -141,8 +182,8 @@ resource "terraform_data" "token_rotation_trigger" {
 }
 
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
-  count           = var.connection_name != null ? 1 : 0
-  connection_id   = local.backup_recovery_connection.connection_id
+  count           = local.create_registration_token ? 1 : 0
+  connection_id   = var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0].connection_id, "") : try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id, "")
   x_ibm_tenant_id = local.tenant_id
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid

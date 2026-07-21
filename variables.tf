@@ -42,6 +42,16 @@ variable "plan" {
   }
 }
 
+variable "service_type" {
+  type        = string
+  description = "The IBM Cloud service name for the Backup and Recovery instance. Use the default \"backup-recovery\" for production. Set to \"backup-recovery-tests\" to provision against the test environment."
+  default     = "backup-recovery"
+  validation {
+    condition     = contains(["backup-recovery", "backup-recovery-tests"], var.service_type)
+    error_message = "Invalid service type. Allowed values are \"backup-recovery\" and \"backup-recovery-tests\"."
+  }
+}
+
 variable "resource_tags" {
   type        = list(string)
   description = "Add user resource tags to the Backup Recovery instance to organize, track, and manage costs. [Learn more](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#tag-types)."
