@@ -25,7 +25,6 @@ var validRegions = []string{
 	"eu-es",
 	"jp-tok",
 	"jp-osa",
-	"au-syd",
 	"ca-tor",
 	"br-sao",
 }
@@ -79,21 +78,6 @@ func TestRunUpgradeExample(t *testing.T) {
 	options := setupOptions(t, "brs-upg", basicExampleDir, map[string]interface{}{
 		"access_tags": permanentResources["accessTags"],
 	})
-
-	// Ignore recreate of delete_policies resource during upgrade test
-	// This resource is recreated when the instance details change
-	options.IgnoreDestroys = testhelper.Exemptions{
-		List: []string{
-			"module.brs.terraform_data.delete_policies[0]",
-		},
-	}
-	// cleanup_connectors is a new resource introduced in this PR; it will not
-	// exist in the base (old) state so the upgrade plan shows it as +create.
-	options.IgnoreAdds = testhelper.Exemptions{
-		List: []string{
-			"module.brs.terraform_data.cleanup_connectors[0]",
-		},
-	}
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
