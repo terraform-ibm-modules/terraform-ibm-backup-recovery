@@ -10,7 +10,7 @@ locals {
   brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
   brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
   backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
-  backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0], null) : try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0], null))
+  backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0], null) : try(one(data.ibm_backup_recovery_data_source_connections.connections[0].connections), null))
   tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
   backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
   backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
@@ -183,7 +183,7 @@ resource "terraform_data" "token_rotation_trigger" {
 
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
   count           = local.create_registration_token ? 1 : 0
-  connection_id   = var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0].connection_id, "") : try(data.ibm_backup_recovery_data_source_connections.connections[0].connections[0].connection_id, "")
+  connection_id   = var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0].connection_id, "") : try(one(data.ibm_backup_recovery_data_source_connections.connections[0].connections).connection_id, "")
   x_ibm_tenant_id = local.tenant_id
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid

@@ -113,8 +113,8 @@ variable "create_new_connection" {
 
 variable "connection_name" {
   type        = string
-  description = "Name of the data source connection. If `create_new_connection` is `true` (default), a new connection with this name will be created. If `false`, an existing connection with this name must exist."
-  default     = "brs-connection"
+  description = "Name of the data source connection. If `create_new_connection` is `true` (default), a new connection with this name will be created. If `false`, an existing connection with this name must exist. Set to `null` (default) to skip connection creation and lookup entirely."
+  default     = null
 }
 
 variable "connection_env_type" {
