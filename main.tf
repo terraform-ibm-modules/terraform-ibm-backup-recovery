@@ -164,8 +164,8 @@ resource "terraform_data" "cleanup_connectors" {
 }
 
 resource "time_rotating" "token_rotation" {
-  count         = local.create_registration_token ? 1 : 0
-  rotation_days = 1
+  count          = local.create_registration_token ? 1 : 0
+  rotation_hours = var.token_rotation_hours
 }
 
 # This terraform_data resource acts as a rotation trigger. When time_rotating

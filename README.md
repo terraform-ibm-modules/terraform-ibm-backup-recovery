@@ -133,6 +133,7 @@ You need the following permissions to run this module:
 | <a name="input_resource_tags"></a> [resource\_tags](#input\_resource\_tags) | Add user resource tags to the Backup Recovery instance to organize, track, and manage costs. [Learn more](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#tag-types). | `list(string)` | `[]` | no |
 | <a name="input_service_endpoints"></a> [service\_endpoints](#input\_service\_endpoints) | Types of service endpoints to enable for the Backup Recovery instance. Allowed values: 'public', 'private', 'public-and-private'. This controls which network endpoints are available for accessing the service. | `string` | `"public"` | no |
 | <a name="input_service_type"></a> [service\_type](#input\_service\_type) | The IBM Cloud service name for the Backup and Recovery instance. Use the default "backup-recovery" for production. Set to "backup-recovery-tests" to provision against the test environment. | `string` | `"backup-recovery"` | no |
+| <a name="input_token_rotation_hours"></a> [token\_rotation\_hours](#input\_token\_rotation\_hours) | Hours between registration token rotations. Must be less than the BRS token lifetime (24 h) to eliminate the race window between token expiry and DSC scale-up. See guide section 7.5.2. | `number` | `20` | no |
 
 ### Outputs
 

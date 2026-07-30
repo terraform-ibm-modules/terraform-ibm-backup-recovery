@@ -145,6 +145,18 @@ variable "install_required_binaries" {
   nullable    = false
 }
 
+variable "token_rotation_hours" {
+  type        = number
+  default     = 20
+  description = "Hours between registration token rotations. Must be less than the BRS token lifetime (24 h) to eliminate the race window between token expiry and DSC scale-up. See guide section 7.5.2."
+  nullable    = false
+
+  validation {
+    condition     = var.token_rotation_hours >= 1 && var.token_rotation_hours <= 23
+    error_message = "token_rotation_hours must be between 1 and 23."
+  }
+}
+
 ###############################
 # Protection Policy
 ###############################
