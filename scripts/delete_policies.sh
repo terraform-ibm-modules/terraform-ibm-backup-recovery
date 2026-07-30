@@ -1,7 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-URL=$1
+# Strip any leading https:// so the script works whether extensions.public
+# returns a bare hostname or a full URL (IBM Cloud API changed this format).
+URL=${1#https://}
 TENANT=$2
 ENDPOINT_TYPE=$3
 # The binaries downloaded by the install-binaries script are located in the /tmp directory.
