@@ -56,7 +56,6 @@ func TestRunBasicExample(t *testing.T) {
 
 // Upgrade test (using basic example).
 func TestRunUpgradeExample(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 
 	options := setupOptions(t, "brs-upg", basicExampleDir, testRegion, map[string]interface{}{
