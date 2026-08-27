@@ -122,6 +122,7 @@ data "ibm_backup_recovery_data_source_connections" "connections" {
   endpoint_type    = var.endpoint_type
   instance_id      = local.backup_recovery_instance.guid
   region           = local.brs_instance_region
+  service_name     = var.service_type
 }
 
 resource "ibm_backup_recovery_data_source_connection" "connection" {
@@ -132,6 +133,7 @@ resource "ibm_backup_recovery_data_source_connection" "connection" {
   instance_id         = local.backup_recovery_instance.guid
   region              = local.brs_instance_region
   connection_env_type = var.connection_env_type
+  service_name        = var.service_type
 }
 # This resource deletes all connectors registered against the connection before
 # the connection itself is destroyed. Without this, BRS will reject the connection
@@ -195,6 +197,7 @@ resource "ibm_backup_recovery_connection_registration_token" "registration_token
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid
   region          = local.brs_instance_region
+  service_name    = var.service_type
 
   lifecycle {
     replace_triggered_by = [
@@ -226,6 +229,7 @@ data "ibm_backup_recovery_protection_policies" "existing_policies" {
   region          = local.brs_instance_region
   endpoint_type   = var.endpoint_type
   policy_names    = [each.key]
+  service_name    = var.service_type
 }
 
 resource "ibm_backup_recovery_protection_policy" "protection_policy" {
@@ -236,6 +240,7 @@ resource "ibm_backup_recovery_protection_policy" "protection_policy" {
   endpoint_type   = var.endpoint_type
   instance_id     = local.backup_recovery_instance.guid
   region          = local.brs_instance_region
+  service_name    = var.service_type
 
   backup_policy {
     dynamic "bmr" {
