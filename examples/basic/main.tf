@@ -15,10 +15,7 @@ module "resource_group" {
 ########################################################################################################################
 
 module "brs" {
-  source = "../.."
-  # remove the above line and uncomment the below 2 lines to consume the module from the registry
-  # source            = "terraform-ibm-modules/backup-recovery/ibm"
-  # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
+  source                    = "../.."
   resource_group_id         = module.resource_group.resource_group_id
   instance_name             = "${var.prefix}-instance"
   connection_name           = "${var.prefix}-instance"
@@ -29,6 +26,7 @@ module "brs" {
   existing_brs_instance_crn = var.existing_brs_instance_crn
   connection_env_type       = var.connection_env_type
   service_endpoints         = var.service_endpoints
+  service_type              = var.service_type
   parameters_json           = var.parameters_json
   policies = [{
     name                      = "${var.prefix}-policy"
@@ -44,77 +42,5 @@ module "brs" {
       duration = 4
       unit     = "Weeks"
     }
-    # See, https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6738
-    # blackout_window = [{
-    #   day = "Sunday"
-    #   start_time = {
-    #     hour      = 2
-    #     minute    = 0
-    #     time_zone = "America/Los_Angeles"
-    #   }
-    #   end_time = {
-    #     hour      = 6
-    #     minute    = 0
-    #     time_zone = "America/Los_Angeles"
-    #   }
-    # }]
-
-    # Example: Cascaded targets configuration with newly supported properties
-    # cascaded_targets_config = {
-    #   source_cluster_id = 123456789
-    #   remote_targets = [{
-    #     replication_targets = [{
-    #       target_type         = "RemoteCluster"
-    #       backup_run_type     = "Regular"
-    #       copy_on_run_success = true
-    #       schedule = {
-    #         unit      = "Runs"
-    #         frequency = 1
-    #       }
-    #       retention = {
-    #         duration = 7
-    #         unit     = "Days"
-    #       }
-    #       # Newly added: log_retention support
-    #       log_retention = {
-    #         duration = 3
-    #         unit     = "Days"
-    #       }
-    #       # Newly added: run_timeouts support
-    #       run_timeouts = [{
-    #         timeout_mins = 60
-    #         backup_type  = "kRegular"
-    #       }]
-    #       remote_target_config = {
-    #         cluster_id = 987654321
-    #       }
-    #     }]
-    #     cloud_spin_targets = [{
-    #       backup_run_type     = "Full"
-    #       copy_on_run_success = true
-    #       schedule = {
-    #         unit      = "Days"
-    #         frequency = 1
-    #       }
-    #       retention = {
-    #         duration = 30
-    #         unit     = "Days"
-    #       }
-    #       # Newly added: log_retention support
-    #       log_retention = {
-    #         duration = 7
-    #         unit     = "Days"
-    #       }
-    #       # Newly added: run_timeouts support
-    #       run_timeouts = [{
-    #         timeout_mins = 120
-    #         backup_type  = "kFull"
-    #       }]
-    #       target = {
-    #         id = 12345
-    #       }
-    #     }]
-    #   }]
-    # }
   }]
 }

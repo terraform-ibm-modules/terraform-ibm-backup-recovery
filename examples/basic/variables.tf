@@ -52,6 +52,12 @@ variable "service_endpoints" {
   default     = "public"
 }
 
+variable "service_type" {
+  type        = string
+  description = "The IBM Cloud service name for the Backup and Recovery instance. Use the default \"backup-recovery\" for production. Set to \"backup-recovery-tests\" to provision against the test environment."
+  default     = "backup-recovery"
+}
+
 variable "parameters_json" {
   type        = string
   description = "Optional JSON string to configure the Backup Recovery Service instance. Example: jsonencode({ key1 = \"value1\", nested = { enabled = true } })"
