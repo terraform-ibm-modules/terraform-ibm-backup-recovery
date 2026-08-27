@@ -54,14 +54,16 @@ func TestRunBasicExample(t *testing.T) {
 	assert.NotNil(t, output, "Expected some output")
 }
 
-// Upgrade test (using basic example)
+// Upgrade test (using basic example).
+// NOTE: service_type and parameters_json are intentionally omitted here.
+// The upgrade test runs terraform apply against the last release tag (v1.12.3)
+// as the base, which predates the service_type variable. Passing it would cause
+// "Value for undeclared variable" on the base apply. The upgrade path is tested
+// using production defaults (backup-recovery service, no custom-prov-code).
 func TestRunUpgradeExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "brs-upg", basicExampleDir, testRegion, map[string]interface{}{
-		"service_type":    testServiceType,
-		"parameters_json": testCustomProvCode,
-	})
+	options := setupOptions(t, "brs-upg", basicExampleDir, testRegion, map[string]interface{}{})
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
