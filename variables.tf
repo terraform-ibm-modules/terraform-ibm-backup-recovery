@@ -14,9 +14,12 @@ variable "existing_brs_instance_crn" {
   default     = null
 }
 
+# var.create_new_instance is no longer used for gating — instance lifecycle is
+# now handled entirely by the external script (scripts/ensure_brs_instance.sh).
+# Kept declared so existing callers and DA input schemas do not break.
 variable "create_new_instance" {
   type        = bool
-  description = "Whether to provision a new Backup & Recovery Service instance. When left as `null` (default), the behaviour is inferred from `existing_brs_instance_crn` (a new instance is created when the CRN is not provided). Set this explicitly to `false` to reuse an existing instance whose CRN is only known after apply (for example, an instance created earlier in the same apply and passed to a second consumer); this keeps the module's `count`/`for_each` gates from depending on an unknown value at plan time."
+  description = "Deprecated. Has no effect — instance creation is now handled by the external script. Kept to avoid breaking existing callers."
   default     = null
 }
 

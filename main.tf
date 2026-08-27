@@ -1,19 +1,17 @@
 
 locals {
-  # Determine whether to create new resources or use existing ones.
-  # When var.create_new_instance is set explicitly it takes precedence; otherwise
-  # the behaviour is inferred from existing_brs_instance_crn (backward-compatible).
-  # An explicit value lets callers reuse an instance whose CRN is only known after
-  # apply (e.g. one created earlier in the same apply) without making the
-  # count/for_each gates below depend on an unknown value.
-  create_new_instance                  = var.create_new_instance != null ? var.create_new_instance : (var.existing_brs_instance_crn == null || var.existing_brs_instance_crn == "")
-  brs_instance_guid                    = local.create_new_instance ? null : module.crn_parser[0].service_instance
-  brs_instance_region                  = local.create_new_instance ? var.region : module.crn_parser[0].region
-  backup_recovery_instance             = local.create_new_instance ? ibm_resource_instance.backup_recovery_instance[0] : data.ibm_resource_instance.backup_recovery_instance[0]
+  # True once .brs_instance_crn exists on disk (written by the provisioner on
+  # first apply). False on the very first plan — all downstream resources that
+  # need a live CRN are gated on this so plan succeeds cleanly before apply.
+  crn_available = fileexists("${path.module}/.brs_instance_crn")
+
+  brs_instance_guid                    = local.crn_available ? module.crn_parser.service_instance : null
+  brs_instance_region                  = local.crn_available ? module.crn_parser.region : var.region
+  backup_recovery_instance             = local.crn_available ? data.ibm_resource_instance.backup_recovery_instance[0] : null
   backup_recovery_connection           = var.connection_name == null ? null : (var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0], null) : try(one(data.ibm_backup_recovery_data_source_connections.connections[0].connections), null))
-  tenant_id                            = "${local.backup_recovery_instance.extensions.tenant-id}/"
-  backup_recovery_instance_public_url  = local.backup_recovery_instance.extensions["endpoints.public"]
-  backup_recovery_instance_private_url = local.backup_recovery_instance.extensions["endpoints.private"]
+  tenant_id                            = local.crn_available ? "${local.backup_recovery_instance.extensions.tenant-id}/" : null
+  backup_recovery_instance_public_url  = local.crn_available ? local.backup_recovery_instance.extensions["endpoints.public"] : null
+  backup_recovery_instance_private_url = local.crn_available ? local.backup_recovery_instance.extensions["endpoints.private"] : null
   binaries_path                        = "/tmp"
 
   # Gate registration-token creation on whether a connection_name is supplied.
@@ -28,11 +26,57 @@ locals {
   create_registration_token = var.connection_name != null
 }
 
+# Runs ensure_brs_instance.sh on create and whenever the instance identity
+# changes. local-exec never runs on plan or destroy.
+#
+# The CRN is persisted in .brs_instance_crn on disk after the first apply.
+# triggers_replace.crn reads that file via try() so it is "" on the very
+# first plan (file absent) and the real CRN on all subsequent plans — making
+# this resource stable after the second apply.
+#
+# Flow:
+#   Plan 1  : crn="" → resource will be created
+#   Apply 1 : script runs, writes CRN to .brs_instance_crn
+#   Plan 2  : crn=<real> → triggers_replace changed → resource will be replaced
+#   Apply 2 : script runs, finds instance by name, exits immediately (no create)
+#   Plan 3+ : crn=<real> unchanged → no-op
+resource "terraform_data" "ensure_brs_instance" {
+  triggers_replace = {
+    existing_crn  = var.existing_brs_instance_crn != null ? var.existing_brs_instance_crn : ""
+    instance_name = var.instance_name
+    service       = var.service_type
+    plan          = var.plan
+    location      = var.region
+    # Stabilises after first apply — once the file exists this is the real CRN
+    # and triggers_replace no longer changes between plans.
+    crn           = try(trimspace(file("${path.module}/.brs_instance_crn")), "")
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = "${path.module}/scripts/ensure_brs_instance.sh > ${path.module}/.brs_instance_crn"
+
+    environment = {
+      IBMCLOUD_API_KEY  = var.ibmcloud_api_key
+      EXISTING_CRN      = self.triggers_replace.existing_crn
+      INSTANCE_NAME     = self.triggers_replace.instance_name
+      SERVICE           = self.triggers_replace.service
+      PLAN              = self.triggers_replace.plan
+      LOCATION          = self.triggers_replace.location
+      RESOURCE_GROUP_ID = var.resource_group_id
+      PARAMETERS_JSON   = var.parameters_json != null ? var.parameters_json : ""
+      SERVICE_ENDPOINTS = var.service_endpoints
+    }
+  }
+}
+
 module "crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
   version = "1.9.0"
-  count   = local.create_new_instance ? 0 : 1
-  crn     = var.existing_brs_instance_crn
+  # Read the CRN directly from the file written by the provisioner.
+  # try() returns "" when the file is absent (first plan), matching the
+  # crn_available=false gate so no downstream resources are instantiated.
+  crn = try(trimspace(file("${path.module}/.brs_instance_crn")), "")
 }
 
 resource "terraform_data" "install_dependencies" {
@@ -40,7 +84,7 @@ resource "terraform_data" "install_dependencies" {
     terraform_data.delete_policies,
     terraform_data.cleanup_connectors,
   ]
-  count = (var.install_required_binaries && local.create_new_instance) ? 1 : 0
+  count = var.install_required_binaries ? 1 : 0
   input = {
     binaries_path = local.binaries_path
   }
@@ -51,32 +95,15 @@ resource "terraform_data" "install_dependencies" {
   }
 }
 
-resource "ibm_resource_instance" "backup_recovery_instance" {
-  count             = local.create_new_instance ? 1 : 0
-  name              = var.instance_name
-  service           = var.service_type
-  plan              = var.plan
-  location          = local.brs_instance_region
-  resource_group_id = var.resource_group_id
-  tags              = var.resource_tags
-  parameters_json   = var.parameters_json
-  service_endpoints = var.service_endpoints
-  timeouts {
-    create = "60m"
-    update = "60m"
-    delete = "60m"
-  }
-}
-
 data "ibm_iam_access_tag" "access_tag" {
-  for_each = local.create_new_instance && length(var.access_tags) != 0 ? toset(var.access_tags) : []
+  for_each = length(var.access_tags) != 0 ? toset(var.access_tags) : []
   name     = each.value
 }
 
 resource "ibm_resource_tag" "backup_recovery_access_tag" {
-  depends_on  = [data.ibm_iam_access_tag.access_tag]
-  count       = local.create_new_instance && length(var.access_tags) > 0 ? 1 : 0
-  resource_id = ibm_resource_instance.backup_recovery_instance[0].crn
+  depends_on  = [data.ibm_iam_access_tag.access_tag, terraform_data.ensure_brs_instance]
+  count       = local.crn_available && length(var.access_tags) > 0 ? 1 : 0
+  resource_id = local.backup_recovery_instance.crn
   tags        = var.access_tags
   tag_type    = "access"
 }
@@ -85,7 +112,9 @@ resource "ibm_resource_tag" "backup_recovery_access_tag" {
 # attempting to delete the instance, the deletion will fail. This is the expected default behavior — even when
 # an instance is created through the UI, it cannot be deleted until its associated policies are removed first.
 resource "terraform_data" "delete_policies" {
-  count = local.create_new_instance ? 1 : 0
+  count = local.crn_available ? 1 : 0
+
+  depends_on = [terraform_data.ensure_brs_instance]
 
   input = {
     url           = var.endpoint_type == "public" ? local.backup_recovery_instance_public_url : local.backup_recovery_instance_private_url
@@ -107,16 +136,18 @@ resource "terraform_data" "delete_policies" {
   }
 }
 
-# Data source to retrieve the existing instance details if create_new_instance is false.
-# This is used when a BRS instance CRN is provided.
+# Reads the BRS instance details using the CRN returned by the external script.
+# Data sources have no delete operation — terraform destroy never touches the instance.
 data "ibm_resource_instance" "backup_recovery_instance" {
-  count      = local.create_new_instance ? 0 : 1
-  identifier = local.brs_instance_guid
+  count      = local.crn_available ? 1 : 0
+  depends_on = [terraform_data.ensure_brs_instance]
+  identifier = module.crn_parser.service_instance
 }
 
 # data_source_connection
 data "ibm_backup_recovery_data_source_connections" "connections" {
-  count            = var.connection_name != null && !var.create_new_connection ? 1 : 0
+  count            = local.crn_available && var.connection_name != null && !var.create_new_connection ? 1 : 0
+  depends_on       = [terraform_data.ensure_brs_instance]
   x_ibm_tenant_id  = local.tenant_id
   connection_names = [var.connection_name]
   endpoint_type    = var.endpoint_type
@@ -126,7 +157,8 @@ data "ibm_backup_recovery_data_source_connections" "connections" {
 }
 
 resource "ibm_backup_recovery_data_source_connection" "connection" {
-  count               = var.connection_name != null && var.create_new_connection ? 1 : 0
+  count               = local.crn_available && var.connection_name != null && var.create_new_connection ? 1 : 0
+  depends_on          = [terraform_data.ensure_brs_instance]
   x_ibm_tenant_id     = local.tenant_id
   connection_name     = var.connection_name
   endpoint_type       = var.endpoint_type
@@ -140,7 +172,7 @@ resource "ibm_backup_recovery_data_source_connection" "connection" {
 # delete because connectors (deployed by the DSC Helm chart) are still registered.
 # destroy ordering: cleanup_connectors is destroyed first, connection second.
 resource "terraform_data" "cleanup_connectors" {
-  count = var.connection_name != null && var.create_new_connection ? 1 : 0
+  count = local.crn_available && var.connection_name != null && var.create_new_connection ? 1 : 0
 
   input = {
     url           = var.endpoint_type == "public" ? local.backup_recovery_instance_public_url : local.backup_recovery_instance_private_url
@@ -191,7 +223,7 @@ resource "terraform_data" "token_rotation_trigger" {
 }
 
 resource "ibm_backup_recovery_connection_registration_token" "registration_token" {
-  count           = local.create_registration_token ? 1 : 0
+  count           = local.crn_available && local.create_registration_token ? 1 : 0
   connection_id   = var.create_new_connection ? try(ibm_backup_recovery_data_source_connection.connection[0].connection_id, "") : try(one(data.ibm_backup_recovery_data_source_connections.connections[0].connections).connection_id, "")
   x_ibm_tenant_id = local.tenant_id
   endpoint_type   = var.endpoint_type
@@ -211,9 +243,11 @@ resource "ibm_backup_recovery_connection_registration_token" "registration_token
 ##############################################################################
 
 locals {
-  # Explicitly filter based on the new boolean flag
-  policies_to_create = { for p in var.policies : p.name => p if p.create_new_policy }
-  policies_to_lookup = { for p in var.policies : p.name => p if !p.create_new_policy }
+  # Explicitly filter based on the new boolean flag.
+  # Empty maps before first apply so for_each resources don't attempt API calls
+  # with a null tenant_id / instance_id.
+  policies_to_create = local.crn_available ? { for p in var.policies : p.name => p if p.create_new_policy } : {}
+  policies_to_lookup = local.crn_available ? { for p in var.policies : p.name => p if !p.create_new_policy } : {}
 
   resolved_policy_ids = merge(
     { for k, v in ibm_backup_recovery_protection_policy.protection_policy : k => replace(v.id, "${local.tenant_id}::", "") },
@@ -223,6 +257,8 @@ locals {
 
 data "ibm_backup_recovery_protection_policies" "existing_policies" {
   for_each = local.policies_to_lookup
+
+  depends_on = [terraform_data.ensure_brs_instance]
 
   x_ibm_tenant_id = local.tenant_id
   instance_id     = local.backup_recovery_instance.guid
@@ -234,6 +270,8 @@ data "ibm_backup_recovery_protection_policies" "existing_policies" {
 
 resource "ibm_backup_recovery_protection_policy" "protection_policy" {
   for_each = local.policies_to_create
+
+  depends_on = [terraform_data.ensure_brs_instance]
 
   x_ibm_tenant_id = local.tenant_id
   name            = each.key
