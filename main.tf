@@ -166,6 +166,13 @@ resource "terraform_data" "cleanup_connectors" {
 resource "time_rotating" "token_rotation" {
   count          = local.create_registration_token ? 1 : 0
   rotation_hours = var.token_rotation_hours
+
+  lifecycle {
+    # Ignore the old rotation_days attribute that existed before token_rotation_hours
+    # was introduced. Without this, upgrading from a state that stored rotation_days=1
+    # causes time_rotating to detect a diff and force replacement of the token.
+    ignore_changes = [rotation_days]
+  }
 }
 
 # This terraform_data resource acts as a rotation trigger. When time_rotating
